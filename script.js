@@ -7,7 +7,7 @@ function showSection(id) {
 }
 
 // Countdown
-const weddingDate = new Date("2026-06-20T14:00:00+02:00");
+const weddingDate = new Date("2026-06-13T10:00:00+02:00");
 const countdownEl = document.getElementById("countdown");
 
 function updateCountdown() {
@@ -15,7 +15,7 @@ function updateCountdown() {
   const diff = weddingDate - now;
 
   if (diff <= 0) {
-    countdownEl.textContent = "Heute sagen wir Ja 💍";
+    countdownEl.textContent = "Heute sagen wir JA 💍";
     return;
   }
 
@@ -24,7 +24,7 @@ function updateCountdown() {
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
 
   countdownEl.textContent =
-    `Trauung in ${days} Tagen · ${hours} Std · ${minutes} Min`;
+    `Wir sagen JA in ${days} Tagen · ${hours} Std · ${minutes} Min`;
 }
 
 setInterval(updateCountdown, 60000);
@@ -34,7 +34,7 @@ updateCountdown();
 const PASSWORD = "baltrum2026";
 
 if (!sessionStorage.getItem("accessGranted")) {
-  const input = prompt("Bitte Passwort eingeben:");
+  const input = prompt("Passwort bitte...");
   if (input === PASSWORD) {
     sessionStorage.setItem("accessGranted", "true");
   } else {
