@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hochzeit auf Baltrum</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="hero">
+  <h1>Willkommen zu unserer Hochzeit 💍</h1>
+  <p>Baltrum · 3 Tage · Gemeinsam feiern</p>
+</header>
+
+<nav>
+  <button onclick="showSection('programm')">Programm</button>
+  <button onclick="showSection('orte')">Standorte</button>
+  <button onclick="showSection('fotos')">Fotos</button>
+</nav>
+
+<main>
+  <section id="programm" class="content active">
+    <h2>Hochzeitsprogramm</h2>
+    <ul>
+      <li><strong>Freitag</strong> – Ankommen & Strandspaziergang (17:00)</li>
+      <li><strong>Samstag</strong> – Trauung (14:00), Feier (18:00)</li>
+      <li><strong>Sonntag</strong> – Abschiedsbrunch (10:30)</li>
+    </ul>
+  </section>
+
+  <section id="orte" class="content">
+    <h2>Standorte</h2>
+    <p>📍 Standesamt Baltrum</p>
+    <p>📍 Strandabschnitt West</p>
+    <p>📍 Hotel Strandburg</p>
+  </section>
+
+  <section id="fotos" class="content gallery">
+    <img src="assets/baltrum1.jpg" alt="Baltrum Strand">
+    <img src="assets/baltrum2.jpg" alt="Baltrum Dünen">
+  </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
