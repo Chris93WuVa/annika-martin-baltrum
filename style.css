@@ -1,9 +1,10 @@
 :root {
-  --sand: #f3efe9;
-  --dune: #c7d6c1;
-  --sea: #9fcad1;
-  --sunset: #f2c6c2;
-  --ink: #2f4f4f;
+  --sand: #f8f5f0;
+  --dune: #dbe7d7;
+  --sea: #98c8db;
+  --sunset: #f7c7c3;
+  --ink: #1d3d48;
+  --card: rgba(255,255,255,0.84);
 }
 
 * {
@@ -11,29 +12,60 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  background: linear-gradient(180deg, var(--sand), var(--sea));
+  background:
+    radial-gradient(circle at 20% 0%, rgba(247,199,195,0.45), transparent 35%),
+    linear-gradient(180deg, var(--sand), #edf6fb 55%, #e4f2f6);
   color: var(--ink);
 }
 
 .hero {
   background:
-    linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)),
-    url("assets/welcome.jpg") center/cover;
+    linear-gradient(rgba(14,39,52,0.35), rgba(14,39,52,0.45)),
+    url("assets/0310-steffi-chris-schloss-gruenewald.JPG") center/cover;
   color: white;
   text-align: center;
-  padding: 90px 20px;
+  padding: 110px 20px;
+  position: relative;
+}
+
+.hero::after {
+  content: "🌊";
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.hero-eyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .hero h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+}
+
+.hero p {
+  margin-top: 12px;
+  font-size: 1.05rem;
 }
 
 .countdown {
-  margin-top: 20px;
+  margin-top: 24px;
   font-size: 1.2rem;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.9);
   color: var(--ink);
   display: inline-block;
   padding: 10px 18px;
@@ -43,38 +75,51 @@ body {
 nav {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 12px;
-  background: var(--sand);
+  background: rgba(248,245,240,0.95);
+  backdrop-filter: blur(6px);
   padding: 14px;
   position: sticky;
   top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(29,61,72,0.08);
 }
 
 nav button {
   border: none;
-  background: var(--sea);
-  color: var(--ink);
+  background: white;
+  color: #225263;
   padding: 12px 20px;
   border-radius: 999px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(17,58,74,0.12);
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 nav button:hover {
-  background: var(--sunset);
+  background: #e9f5fb;
+  transform: translateY(-1px);
 }
 
 main {
-  padding: 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
 }
 
 .content {
-  display: none;
+  display: block;
   animation: fade 0.4s ease;
+  margin-bottom: 76px;
+  scroll-margin-top: 92px;
 }
 
-.content.active {
-  display: block;
+.content h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  margin-bottom: 16px;
 }
 
 @keyframes fade {
@@ -83,16 +128,116 @@ main {
 }
 
 .card {
-  background: rgba(255,255,255,0.85);
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 22px;
   margin-bottom: 20px;
+  box-shadow: 0 10px 26px rgba(23,62,77,0.1);
+  border: 1px solid rgba(255,255,255,0.7);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
+  gap: 14px;
+}
+
+.gallery-intro {
+  margin-bottom: 12px;
+}
+
+.gallery-loading {
+  margin: 0;
+  padding: 20px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 16px;
+}
+
+.gallery-item {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: zoom-in;
+}
+
+.tide-intro {
+  margin-bottom: 14px;
+}
+
+.tide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.tide-card {
+  background: rgba(255,255,255,0.88);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(11,46,59,0.1);
+}
+
+.tide-card h3 {
+  margin: 0 0 8px;
+}
+
+.tide-value {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f5566;
+}
+
+.tide-meta {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+}
+
+.tide-card.loading {
+  color: #315d6b;
 }
 
 .gallery img {
   width: 100%;
+  height: 150px;
+  object-fit: cover;
   border-radius: 16px;
-  margin-bottom: 12px;
+  box-shadow: 0 8px 18px rgba(11,46,59,0.12);
+  border: 2px solid rgba(255,255,255,0.75);
+}
+
+.about {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.58), rgba(219,231,215,0.48)),
+    url("https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1400&q=80") center/cover;
+  border-radius: 24px;
+  padding: 22px;
+}
+
+.about-slider {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+}
+
+.quote-card {
+  min-width: min(100%, 320px);
+  flex: 0 0 320px;
+  scroll-snap-align: start;
+  background: rgba(255,255,255,0.94);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid rgba(47,79,79,0.08);
+}
+
+.quote {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #204b4b;
 }
 
 iframe {
@@ -100,4 +245,68 @@ iframe {
   height: 300px;
   border-radius: 16px;
   border: 0;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(7,17,26,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.lightbox.open {
+  display: flex;
+}
+
+.lightbox img {
+  max-width: min(100%, 980px);
+  max-height: 86vh;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  border: none;
+  border-radius: 999px;
+  width: 42px;
+  height: 42px;
+  font-size: 1.4rem;
+  color: white;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+}
+
+.impressum-bar {
+  background: rgba(20, 53, 66, 0.94);
+  color: #eef6fa;
+  padding: 18px 20px 24px;
+  text-align: center;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.impressum-bar p {
+  margin: 4px 0;
+}
+
+@media (max-width: 700px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  nav button {
+    padding: 10px 14px;
+  }
+
+  .quote-card {
+    flex-basis: 85%;
+  }
 }
