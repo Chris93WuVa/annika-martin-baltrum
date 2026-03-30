@@ -86,9 +86,21 @@
 
   <section id="tide-info" class="content tide-section">
     <h2>Tide Info</h2>
-    <p class="tide-intro">🌊 Aktuelle Wasserstände rund um Baltrum (Pegelonline).</p>
-    <div id="tide-dashboard" class="tide-grid">
-      <div class="tide-card loading">Tide-Daten werden geladen …</div>
+    <p class="tide-intro">🌊 Pegel Norderney Riffgat (Pegel-Nr. 9360010) für Baltrum-nahe Gezeiten.</p>
+    <div id="tide-dashboard" class="tide-grid three-cards">
+      <article class="tide-card" id="card-water">
+        <h3>Wasserstand aktuell</h3>
+        <p class="tide-value">…</p>
+        <p class="tide-meta">Lädt Daten …</p>
+      </article>
+      <article class="tide-card" id="card-today">
+        <h3>THW / TNW heute</h3>
+        <p class="tide-meta">Lädt Gezeiten …</p>
+      </article>
+      <article class="tide-card" id="card-tomorrow">
+        <h3>THW / TNW morgen</h3>
+        <p class="tide-meta">Lädt Gezeiten …</p>
+      </article>
     </div>
   </section>
 
@@ -132,9 +144,15 @@
 </div>
 
 <footer class="impressum-bar">
-  <p><strong>Impressum / Disclaimer</strong> · Urheber der Seite: Christoph Jörges</p>
-  <p>Datenschutzhinweis: Diese Seite nutzt externe Dienste (Google Maps, Google Drive, Pegelonline) zur Darstellung von Inhalten.</p>
-  <p>Mit lieben Grüßen 💙</p>
+  <div class="impressum-inner">
+    <p class="impressum-title">Impressum & Disclaimer</p>
+    <p class="impressum-meta">Urheber der Website: <strong>Christoph Jörges</strong></p>
+    <p class="impressum-text">
+      Datenschutzhinweis: Zur Darstellung von Karten, Galerie und Pegelständen werden externe Dienste
+      (Google Maps, Google Drive, Pegelonline) eingebunden.
+    </p>
+    <p class="impressum-note">Mit lieben Grüßen 💙</p>
+  </div>
 </footer>
 
 

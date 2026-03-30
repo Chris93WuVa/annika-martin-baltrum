@@ -109,9 +109,13 @@ async function loadGalleryFromDrive() {
 }
 
 // Tide Info (Pegelonline)
-const PEGELONLINE_STATIONS_URL =
-  "https://m.pegelstaende.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&includeCurrentMeasurement=true";
-const PREFERRED_TIDE_STATIONS = ["BALTRUM", "NORDERNEY", "BORKUM", "JUIST"];
+const PEGEL_UUID_NORDERNEY_RIFFGAT = "c0244c0e-6ae6-40cb-a967-4039b2a0ce7c";
+const PEGEL_CURRENT_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/currentmeasurement.json`;
+const PEGEL_FORECAST_WV_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/WV/measurements.json`;
+const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/measurements.json`;
+const todayCard = document.getElementById("card-today");
+const tomorrowCard = document.getElementById("card-tomorrow");
+const waterCard = document.getElementById("card-water");
 
 function mapTrendLabel(trend) {
   if (trend === "RISING") return "↗️ steigend";
@@ -119,52 +123,97 @@ function mapTrendLabel(trend) {
   return "➡️ gleichbleibend";
 }
 
-function renderTideCards(stations) {
-  if (!tideDashboard) return;
-  tideDashboard.innerHTML = "";
+function formatTime(isoTs) {
+  return new Date(isoTs).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
 
-  stations.forEach((station) => {
-    const waterSeries = (station.timeseries || []).find((series) => series.shortname === "W");
-    const value = waterSeries?.currentMeasurement?.value;
-    const timestamp = waterSeries?.currentMeasurement?.timestamp;
-    const trend = waterSeries?.currentMeasurement?.trend || "STEADY";
+function localDateKey(isoTs) {
+  return new Date(isoTs).toLocaleDateString("de-DE");
+}
 
-    const card = document.createElement("article");
-    card.className = "tide-card";
-    card.innerHTML = `
-      <h3>${station.shortname || station.longname}</h3>
-      <p class="tide-value">${value ?? "–"} cm</p>
-      <p class="tide-meta">${mapTrendLabel(trend)}</p>
-      <p class="tide-meta">Stand: ${timestamp ? new Date(timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
-    `;
-    tideDashboard.appendChild(card);
-  });
+function getThwTnwByDate(measurements, dateKey) {
+  const highs = [];
+  const lows = [];
+  for (let i = 1; i < measurements.length - 1; i += 1) {
+    const prev = measurements[i - 1].value;
+    const curr = measurements[i].value;
+    const next = measurements[i + 1].value;
+    if (localDateKey(measurements[i].timestamp) !== dateKey) continue;
+
+    if (curr >= prev && curr > next) highs.push(measurements[i].timestamp);
+    if (curr <= prev && curr < next) lows.push(measurements[i].timestamp);
+  }
+  return { highs, lows };
+}
+
+function renderTideCalendarCard(cardEl, title, tides) {
+  if (!cardEl) return;
+  const thw = tides.highs.length ? tides.highs.map(formatTime).join(" · ") : "keine Daten";
+  const tnw = tides.lows.length ? tides.lows.map(formatTime).join(" · ") : "keine Daten";
+  cardEl.innerHTML = `
+    <h3>${title}</h3>
+    <p class="tide-meta"><strong>THW:</strong> ${thw}</p>
+    <p class="tide-meta"><strong>TNW:</strong> ${tnw}</p>
+  `;
+}
+
+function renderWaterCard(current, allMeasurements) {
+  if (!waterCard) return;
+  const values = allMeasurements.map((m) => m.value).filter((v) => typeof v === "number");
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const value = current?.value ?? null;
+  const percent = value != null && max > min ? ((value - min) / (max - min)) * 100 : 0;
+  const barWidth = Math.max(6, Math.min(100, percent));
+
+  waterCard.innerHTML = `
+    <h3>Wasserstand aktuell</h3>
+    <p class="tide-value">${value != null ? `${Math.round(value)} cm` : "–"}</p>
+    <div class="tide-level"><span style="width:${barWidth}%"></span></div>
+    <p class="tide-meta">${mapTrendLabel(current?.trend || "STEADY")}</p>
+    <p class="tide-meta">Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
+  `;
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
 }
 
 async function loadTideInfo() {
-  if (!tideDashboard) return;
+  if (!tideDashboard || !todayCard || !tomorrowCard || !waterCard) return;
 
   try {
-    const response = await fetch(PEGELONLINE_STATIONS_URL);
-    if (!response.ok) throw new Error("Pegelonline nicht erreichbar");
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 2);
+    end.setHours(23, 59, 59, 0);
 
-    const stations = await response.json();
-    const withData = stations.filter((station) =>
-      (station.timeseries || []).some((series) => series.shortname === "W" && series.currentMeasurement?.value != null)
-    );
+    const startIso = start.toISOString();
+    const endIso = end.toISOString();
 
-    const nearby = withData.filter((station) =>
-      PREFERRED_TIDE_STATIONS.some((term) =>
-        `${station.shortname} ${station.longname}`.toUpperCase().includes(term)
-      )
-    );
+    const [current, forecast] = await Promise.all([
+      fetchJson(PEGEL_CURRENT_URL),
+      fetchJson(`${PEGEL_FORECAST_WV_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`),
+    ]);
 
-    const selected = (nearby.length ? nearby : withData).slice(0, 4);
-    if (!selected.length) throw new Error("Keine Stationsdaten verfügbar");
+    const series = Array.isArray(forecast) && forecast.length ? forecast : await fetchJson(`${PEGEL_MEASUREMENTS_W_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
+    const cleaned = series
+      .filter((item) => item && typeof item.value === "number" && item.timestamp)
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    renderTideCards(selected);
+    const todayKey = start.toLocaleDateString("de-DE");
+    const tomorrow = new Date(start);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowKey = tomorrow.toLocaleDateString("de-DE");
+
+    renderWaterCard(current, cleaned);
+    renderTideCalendarCard(todayCard, "THW / TNW heute", getThwTnwByDate(cleaned, todayKey));
+    renderTideCalendarCard(tomorrowCard, "THW / TNW morgen", getThwTnwByDate(cleaned, tomorrowKey));
   } catch (error) {
-    tideDashboard.innerHTML = "<div class='tide-card loading'>Tide-Daten konnten aktuell nicht geladen werden. Bitte später erneut versuchen.</div>";
+    tideDashboard.innerHTML = "<div class='tide-card loading'>Tide-Daten konnten nicht geladen werden. Bitte später erneut versuchen.</div>";
   }
 }
 

@@ -34,7 +34,11 @@ Die Navigation springt per Smooth-Scroll zu folgenden Bereichen:
    - Führt auf denselben Google-Drive-Ordner wie die Galerie, damit Gäste Fotos hochladen können.
 
 5. **Tide Info**
-   - Dashboard mit aktuellen Wasserständen/Tendenzen (Pegelonline) für Baltrum-nahe Pegel.
+   - Dashboard mit 3 Kacheln:
+     - aktueller Wasserstand
+     - THW/TNW heute
+     - THW/TNW morgen
+   - Datenquelle: Pegelonline, Pegel Norderney Riffgat (Pegel-Nr. 9360010).
 
 6. **Über uns**
    - Horizontale Slider-Karten mit Zitaten und kurzen Geschichten zu Annika & Martin.

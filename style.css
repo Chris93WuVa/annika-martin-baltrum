@@ -171,6 +171,10 @@ main {
   gap: 14px;
 }
 
+.tide-grid.three-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .tide-card {
   background: rgba(255,255,255,0.88);
   border-radius: 16px;
@@ -192,6 +196,21 @@ main {
 .tide-meta {
   margin: 6px 0 0;
   font-size: 0.92rem;
+}
+
+.tide-level {
+  margin-top: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(31,85,102,0.14);
+  overflow: hidden;
+}
+
+.tide-level span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #74bdd7, #2d7e9d);
 }
 
 .tide-card.loading {
@@ -284,22 +303,53 @@ iframe {
 }
 
 .impressum-bar {
-  background: rgba(20, 53, 66, 0.94);
+  margin-top: 26px;
+  background: linear-gradient(180deg, #143542, #102a35);
   color: #eef6fa;
-  padding: 18px 20px 24px;
+  border-top: 4px solid #79bfd8;
+  box-shadow: 0 -8px 20px rgba(7,28,37,0.22);
+}
+
+.impressum-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 20px 24px;
   text-align: center;
   font-size: 0.92rem;
   line-height: 1.5;
-  border-top: 1px solid rgba(255,255,255,0.2);
 }
 
 .impressum-bar p {
   margin: 4px 0;
 }
 
+.impressum-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #cce9f3;
+}
+
+.impressum-meta {
+  font-weight: 500;
+}
+
+.impressum-text {
+  opacity: 0.95;
+}
+
+.impressum-note {
+  margin-top: 8px;
+}
+
 @media (max-width: 700px) {
   .gallery-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tide-grid.three-cards {
+    grid-template-columns: 1fr;
   }
 
   nav button {
