@@ -66,12 +66,7 @@ async function loadGalleryFromDrive() {
     return;
   }
 
-  if (!DRIVE_API_KEY) {
-    galleryGrid.innerHTML = "<p class='gallery-loading'>Bitte den Google-Drive-API-Key in <code>script.js</code> setzen, damit zufällige Bilder geladen werden können.</p>";
-    return;
-  }
-
-  const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${DRIVE_API_KEY}&pageSize=100`;
+  const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&${DRIVE_API_KEY ? `key=${DRIVE_API_KEY}&` : ""}pageSize=100`;
 
   try {
     const response = await fetch(apiUrl);
@@ -86,20 +81,36 @@ async function loadGalleryFromDrive() {
         full: `https://drive.google.com/uc?export=view&id=${file.id}`,
       }));
 
-    if (!images.length) {
-      galleryGrid.innerHTML = "<p class='gallery-loading'>Im geteilten Ordner wurden keine Bilder gefunden.</p>";
+    if (images.length) {
+      renderGallery(shuffle(images).slice(0, MAX_GALLERY_IMAGES));
       return;
     }
-
-    renderGallery(shuffle(images).slice(0, MAX_GALLERY_IMAGES));
+    throw new Error("Keine Drive-Bilder gefunden");
   } catch (error) {
-    galleryGrid.innerHTML = "<p class='gallery-loading'>Galerie konnte nicht geladen werden. Bitte prüft Freigabe, Folder-ID und API-Key.</p>";
+    try {
+      const htmlResponse = await fetch(uploadLink.href);
+      const html = await htmlResponse.text();
+      const ids = Array.from(
+        new Set([...html.matchAll(/\/file\/d\/([a-zA-Z0-9_-]{20,})/g)].map((match) => match[1]))
+      );
+
+      const fallbackImages = ids.map((id, index) => ({
+        name: `Galeriebild ${index + 1}`,
+        thumb: `https://drive.google.com/thumbnail?id=${id}&sz=w1200`,
+        full: `https://drive.google.com/uc?export=view&id=${id}`,
+      }));
+
+      if (!fallbackImages.length) throw new Error("Keine Bild-IDs gefunden");
+      renderGallery(shuffle(fallbackImages).slice(0, MAX_GALLERY_IMAGES));
+    } catch (fallbackError) {
+      galleryGrid.innerHTML = "<p class='gallery-loading'>Galerie konnte nicht geladen werden. Bitte prüft die Ordnerfreigabe auf \"Jeder mit dem Link\".</p>";
+    }
   }
 }
 
 // Tide Info (Pegelonline)
 const PEGELONLINE_STATIONS_URL =
-  "https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations.json?includeCurrentMeasurement=true";
+  "https://m.pegelstaende.de/webservices/rest-api/v2/stations.json?includeTimeseries=true&includeCurrentMeasurement=true";
 const PREFERRED_TIDE_STATIONS = ["BALTRUM", "NORDERNEY", "BORKUM", "JUIST"];
 
 function mapTrendLabel(trend) {
@@ -113,9 +124,10 @@ function renderTideCards(stations) {
   tideDashboard.innerHTML = "";
 
   stations.forEach((station) => {
-    const value = station.currentMeasurement?.value;
-    const timestamp = station.currentMeasurement?.timestamp;
-    const trend = station.currentMeasurement?.trend || "STEADY";
+    const waterSeries = (station.timeseries || []).find((series) => series.shortname === "W");
+    const value = waterSeries?.currentMeasurement?.value;
+    const timestamp = waterSeries?.currentMeasurement?.timestamp;
+    const trend = waterSeries?.currentMeasurement?.trend || "STEADY";
 
     const card = document.createElement("article");
     card.className = "tide-card";
@@ -137,7 +149,9 @@ async function loadTideInfo() {
     if (!response.ok) throw new Error("Pegelonline nicht erreichbar");
 
     const stations = await response.json();
-    const withData = stations.filter((station) => station.currentMeasurement?.value !== null);
+    const withData = stations.filter((station) =>
+      (station.timeseries || []).some((series) => series.shortname === "W" && series.currentMeasurement?.value != null)
+    );
 
     const nearby = withData.filter((station) =>
       PREFERRED_TIDE_STATIONS.some((term) =>

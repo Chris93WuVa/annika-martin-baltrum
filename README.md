@@ -61,5 +61,6 @@ Der aktuell eingetragene Link für Galerie und Upload ist:
 
 ## Hinweis zur Galerie-Anbindung
 
-Für das Auslesen der Dateiliste aus Google Drive wird in `script.js` ein `DRIVE_API_KEY` benötigt.
-Ist kein API-Key gesetzt, zeigt die Galerie eine entsprechende Hinweisnachricht an.
+Die Galerie nutzt primär die Google-Drive-API und zeigt zufällig bis zu 8 Bilder aus dem verlinkten Ordner.
+Falls kein `DRIVE_API_KEY` gesetzt ist, wird ein Fallback verwendet, der versucht die Bild-IDs direkt aus dem freigegebenen Ordner-Link zu lesen.
+Wichtig ist daher, dass der Ordner auf **„Jeder mit dem Link“** freigegeben ist.
