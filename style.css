@@ -27,7 +27,7 @@ body {
 .hero {
   background:
     linear-gradient(rgba(14,39,52,0.35), rgba(14,39,52,0.45)),
-    url("assets/welcome.jpg") center/cover;
+    url("assets/0310-steffi-chris-schloss-gruenewald.JPG") center/cover;
   color: white;
   text-align: center;
   padding: 110px 20px;
@@ -172,26 +172,6 @@ main {
   flex: 0 0 320px;
   scroll-snap-align: start;
   background: rgba(255,255,255,0.94);
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  border: 1px solid rgba(47,79,79,0.08);
-}
-
-.quote {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #204b4b;
-}
-
-.about-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.quote-card {
-  background: rgba(255,255,255,0.9);
   border-radius: 18px;
   padding: 18px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
