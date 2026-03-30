@@ -1,9 +1,8 @@
 // Navigation
-function showSection(id) {
-  document.querySelectorAll('.content').forEach(s =>
-    s.classList.remove('active')
-  );
-  document.getElementById(id).classList.add('active');
+function scrollToSection(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // Countdown
