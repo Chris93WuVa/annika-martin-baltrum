@@ -14,14 +14,15 @@
 </header>
 
 <nav>
-  <button onclick="showSection('programm')">Programm</button>
-  <button onclick="showSection('orte')">Standorte</button>
-  <button onclick="showSection('fotos')">Foto-Galerie</button>
-  <button onclick="showSection('upload')">Fotos hochladen</button>
+  <button onclick="scrollToSection('programm')">Programm</button>
+  <button onclick="scrollToSection('orte')">Standorte</button>
+  <button onclick="scrollToSection('fotos')">Foto-Galerie</button>
+  <button onclick="scrollToSection('upload')">Fotos hochladen</button>
+  <button onclick="scrollToSection('ueber-uns')">Über uns</button>
 </nav>
 
 <main>
-  <section id="programm" class="content active">
+  <section id="programm" class="content">
     <h2>Hochzeitsprogramm</h2>
     <ul>
       <li><strong>Freitag</strong> – Ankommen & Strandspaziergang (17:00)</li>
@@ -31,39 +32,73 @@
   </section>
 
   <section id="orte" class="content">
-  <div class="card">
-    <h2>📍 Standesamt Baltrum</h2>
-    <iframe
-      src="https://www.google.com/maps?q=Standesamt+Baltrum&output=embed">
-    </iframe>
-  </div>
+    <h2>Standorte</h2>
+    <div class="card">
+      <h3>📍 Standesamt Baltrum</h3>
+      <iframe
+        src="https://www.google.com/maps?q=Standesamt+Baltrum&output=embed">
+      </iframe>
+    </div>
 
-  <div class="card">
-    <h2>📍 Strandabschnitt West</h2>
-    <iframe
-      src="https://www.google.com/maps?q=Baltrum+Weststrand&output=embed">
-    </iframe>
-  </div>
-</section>
+    <div class="card">
+      <h3>📍 Strandabschnitt West</h3>
+      <iframe
+        src="https://www.google.com/maps?q=Baltrum+Weststrand&output=embed">
+      </iframe>
+    </div>
+  </section>
 
-<section id="fotos" class="content gallery">
+  <section id="fotos" class="content gallery">
+    <h2>Foto-Galerie</h2>
     <img src="assets/baltrum1.jpg" alt="Baltrum Strand">
     <img src="assets/baltrum2.jpg" alt="Baltrum Dünen">
-</section>
+  </section>
 
-<section id="upload" class="content">
-  <div class="card">
-    <h2>Fotos teilen 📸</h2>
-    <p>
-      Lade hier deine Erinnerungen hoch – wir freuen uns auf eure Perspektiven!
-    </p>
-    <a
-      href="https://drive.google.com/drive/folders/DEIN_LINK"
-      target="_blank">
-      ➜ Zum Foto-Upload
-    </a>
-  </div>
-</section>
+  <section id="upload" class="content">
+    <div class="card">
+      <h2>Fotos teilen 📸</h2>
+      <p>
+        Lade hier deine Erinnerungen hoch – wir freuen uns auf eure Perspektiven!
+      </p>
+      <a
+        href="https://drive.google.com/drive/folders/DEIN_LINK"
+        target="_blank">
+        ➜ Zum Foto-Upload
+      </a>
+    </div>
+  </section>
+
+  <section id="ueber-uns" class="content about">
+    <h2>Über uns</h2>
+    <div class="about-grid">
+      <article class="quote-card">
+        <p class="quote">„Mit dir fühlt sich selbst Gegenwind nach Rückenwind an.“</p>
+        <p>
+          Annika und Martin haben sich bei einem verregneten Inselwochenende
+          kennengelernt – und genau dort gemerkt, dass sie zusammen jede Wetterlage
+          feiern können.
+        </p>
+      </article>
+
+      <article class="quote-card">
+        <p class="quote">„Unsere schönsten Pläne beginnen immer mit: Lass uns einfach losgehen.“</p>
+        <p>
+          Ob spontane Zugfahrten ans Meer, lange Spaziergänge durch Dünen oder
+          selbstgekochte Abendessen mit Freunden: Die beiden lieben die kleinen
+          Momente, die groß bleiben.
+        </p>
+      </article>
+
+      <article class="quote-card">
+        <p class="quote">„Zuhause ist kein Ort – zuhause ist ein Wir.“</p>
+        <p>
+          Was Annika und Martin verbindet, ist ihre ruhige Art, füreinander da zu
+          sein. Mit Humor, viel Herz und einer großen Portion Teamgeist freuen sie
+          sich nun auf alles, was vor ihnen liegt.
+        </p>
+      </article>
+    </div>
+  </section>
 
 </main>
 

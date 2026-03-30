@@ -11,6 +11,10 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: linear-gradient(180deg, var(--sand), var(--sea));
@@ -69,12 +73,9 @@ main {
 }
 
 .content {
-  display: none;
-  animation: fade 0.4s ease;
-}
-
-.content.active {
   display: block;
+  animation: fade 0.4s ease;
+  margin-bottom: 32px;
 }
 
 @keyframes fade {
@@ -93,6 +94,26 @@ main {
   width: 100%;
   border-radius: 16px;
   margin-bottom: 12px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.quote-card {
+  background: rgba(255,255,255,0.9);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid rgba(47,79,79,0.08);
+}
+
+.quote {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #204b4b;
 }
 
 iframe {
