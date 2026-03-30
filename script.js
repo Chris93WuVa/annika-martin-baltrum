@@ -14,7 +14,7 @@ function updateCountdown() {
   const now = new Date();
   const diff = weddingDate - now;
 
-  if (diff <= 0) {
+  if (Math.floor(diff / (1000 * 60 * 60 * 24)) < 1) {
     countdownEl.textContent = "Heute sagen wir JA 💍";
     return;
   }
