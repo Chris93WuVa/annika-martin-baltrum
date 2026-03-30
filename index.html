@@ -23,6 +23,7 @@
   <button onclick="scrollToSection('orte')">Standorte</button>
   <button onclick="scrollToSection('fotos')">Foto-Galerie</button>
   <button onclick="scrollToSection('upload')">Fotos hochladen</button>
+  <button onclick="scrollToSection('tide-info')">Tide Info</button>
   <button onclick="scrollToSection('ueber-uns')">Über uns</button>
 </nav>
 
@@ -62,13 +63,9 @@
 
   <section id="fotos" class="content gallery">
     <h2>Foto-Galerie</h2>
-    <div class="gallery-grid">
-      <img src="https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=1200&q=80" alt="Baltrum Strand bei Abendlicht">
-      <img src="https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1200&q=80" alt="Dünenlandschaft auf Baltrum">
-      <img src="https://images.unsplash.com/photo-1498654896293-37aacf113fd9?auto=format&fit=crop&w=1200&q=80" alt="Nordsee mit weichem Licht">
-      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" alt="Meerblick an der Küste">
-      <img src="https://images.unsplash.com/photo-1468581264429-2548ef9eb732?auto=format&fit=crop&w=1200&q=80" alt="Holzsteg durch Dünen">
-      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80" alt="Naturstimmung auf Baltrum">
+    <p class="gallery-intro">✨ Es werden zufällig 8 Bilder aus eurem geteilten Google-Drive-Ordner geladen.</p>
+    <div id="gallery-grid" class="gallery-grid">
+      <p class="gallery-loading">Galerie wird geladen …</p>
     </div>
   </section>
 
@@ -79,10 +76,19 @@
         Lade hier deine Erinnerungen hoch – wir freuen uns auf eure Perspektiven!
       </p>
       <a
-        href="https://drive.google.com/drive/folders/DEIN_LINK"
+        id="upload-link"
+        href="https://drive.google.com/drive/folders/1tRHJIMfP3HbZFu6R9OVMOhlh1fRUJSMr?usp=sharing"
         target="_blank">
         ➜ Zum Foto-Upload
       </a>
+    </div>
+  </section>
+
+  <section id="tide-info" class="content tide-section">
+    <h2>Tide Info</h2>
+    <p class="tide-intro">🌊 Aktuelle Wasserstände rund um Baltrum (Pegelonline).</p>
+    <div id="tide-dashboard" class="tide-grid">
+      <div class="tide-card loading">Tide-Daten werden geladen …</div>
     </div>
   </section>
 
@@ -119,6 +125,11 @@
   </section>
 
 </main>
+
+<div id="lightbox" class="lightbox" aria-hidden="true">
+  <button id="lightbox-close" class="lightbox-close" aria-label="Galerie schließen">✕</button>
+  <img id="lightbox-image" src="" alt="Vergrößertes Galeriebild">
+</div>
 
 
 <script src="script.js"></script>

@@ -1,45 +1,65 @@
 # Hochzeit Annika & Martin auf Baltrum
 
-Diese Website ist eine kleine, statische Event-Seite für die Hochzeit von Annika und Martin auf Baltrum.
-Sie bündelt alle wichtigen Informationen für Gäste an einem Ort und bietet einen einfachen Zugang zu Programm, Orten, Fotos und Upload.
+Diese Website ist eine moderne, statische One-Pager-Hochzeitsseite für Annika & Martin.
+Sie bündelt Programm, Standorte, Tide-Informationen und eine Galerie an einem Ort.
 
 ## Zweck der Website
 
-Die Seite soll Hochzeitsgästen eine schnelle Orientierung geben:
+Die Seite hilft Gästen dabei, schnell alle wichtigen Informationen für das Hochzeitswochenende zu finden:
 
-- **Ablauf verstehen:** Das Wochenendprogramm mit den wichtigsten Zeiten ist direkt sichtbar.
-- **Orte finden:** Kartenansichten helfen bei der Anreise zu den relevanten Locations auf Baltrum.
-- **Erinnerungen teilen:** Gäste können Fotos ansehen und über einen externen Link eigene Bilder hochladen.
-- **Vorfreude steigern:** Ein Countdown zeigt die verbleibende Zeit bis zur Trauung.
+- Ablauf des Wochenendes im Blick behalten
+- Relevante Orte auf Baltrum direkt in Karten öffnen
+- Aktuelle Tide-/Wasserstandsinformationen für nahe Pegel sehen
+- Fotos aus einem geteilten Google-Drive-Ordner ansehen
+- Eigene Fotos über denselben Google-Drive-Link hochladen
 
-## Inhalt der Website
+## Inhaltsbereiche
 
-Die Website besteht aus vier Hauptbereichen, die über eine Navigation erreichbar sind:
+Die Navigation springt per Smooth-Scroll zu folgenden Bereichen:
 
 1. **Programm**
-   - Übersicht über Freitag, Samstag und Sonntag mit zentralen Programmpunkten.
+   - Freitag/Samstag/Sonntag mit den wichtigsten Zeitpunkten.
 
 2. **Standorte**
-   - Eingebettete Google-Maps-Ansichten für Standesamt Baltrum und einen Strandabschnitt.
+   - Google-Maps-Einbettungen für:
+     - Standesamt Baltrum
+     - Strandabschnitt West
+     - Restaurant Zum Seehund
 
 3. **Foto-Galerie**
-   - Bereich für stimmungsvolle Baltrum-Bilder.
+   - Lädt zufällig bis zu 8 Bilder aus dem geteilten Google-Drive-Ordner.
+   - Klick auf ein Bild öffnet eine vergrößerte Lightbox-Ansicht.
 
 4. **Fotos hochladen**
-   - Link zu einem Google-Drive-Ordner, über den Gäste ihre Bilder teilen können.
+   - Führt auf denselben Google-Drive-Ordner wie die Galerie, damit Gäste Fotos hochladen können.
+
+5. **Tide Info**
+   - Dashboard mit aktuellen Wasserständen/Tendenzen (Pegelonline) für Baltrum-nahe Pegel.
+
+6. **Über uns**
+   - Horizontale Slider-Karten mit Zitaten und kurzen Geschichten zu Annika & Martin.
+
+## Verwendeter Google-Drive-Ordner
+
+Der aktuell eingetragene Link für Galerie und Upload ist:
+
+`https://drive.google.com/drive/folders/1tRHJIMfP3HbZFu6R9OVMOhlh1fRUJSMr?usp=sharing`
 
 ## Technischer Aufbau
 
-Die Seite ist bewusst leichtgewichtig umgesetzt und benötigt kein Backend:
-
-- **`index.html`**: Struktur und Inhalte der Website.
-- **`style.css`**: Gestaltung (Farben, Layout, Karten, Buttons, Animationen).
-- **`script.js`**: Interaktive Funktionen:
-  - Umschalten zwischen Sektionen
+- **`index.html`**
+  - Struktur aller Bereiche inkl. Navigation und Lightbox-Container.
+- **`style.css`**
+  - Modernes Design, responsive Layouts, Gallery-/Tide-Karten und Lightbox-Styling.
+- **`script.js`**
+  - Smooth-Scroll-Navigation
   - Countdown zur Hochzeit
-  - einfacher, clientseitiger Passwortschutz per `sessionStorage`
-- **`assets/`**: Bilddateien für die visuelle Gestaltung (z. B. Hero-Hintergrund).
+  - Laden der Galerie aus Google Drive (inkl. Zufallsauswahl)
+  - Lightbox-Interaktionen
+  - Laden der Tide-Daten (Pegelonline)
+  - einfacher Passwortschutz via `sessionStorage`
 
-## Hinweis
+## Hinweis zur Galerie-Anbindung
 
-Der Foto-Upload-Link in der HTML-Datei ist aktuell als Platzhalter (`DEIN_LINK`) hinterlegt und sollte vor der Nutzung mit dem echten Google-Drive-Link ersetzt werden.
+Für das Auslesen der Dateiliste aus Google Drive wird in `script.js` ein `DRIVE_API_KEY` benötigt.
+Ist kein API-Key gesetzt, zeigt die Galerie eine entsprechende Hinweisnachricht an.
