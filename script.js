@@ -192,18 +192,52 @@ function localDateKey(isoTs) {
 }
 
 function getThwTnwByDate(measurements, dateKey) {
+  const MIN_GAP_MS = 4 * 60 * 60 * 1000;
   const highs = [];
   const lows = [];
-  for (let i = 1; i < measurements.length - 1; i += 1) {
-    const prev = measurements[i - 1].value;
-    const curr = measurements[i].value;
-    const next = measurements[i + 1].value;
-    if (localDateKey(measurements[i].timestamp) !== dateKey) continue;
 
-    if (curr >= prev && curr > next) highs.push(measurements[i].timestamp);
-    if (curr <= prev && curr < next) lows.push(measurements[i].timestamp);
+  const pickDistinctExtrema = (extrema, type) => {
+    const sortedByTime = [...extrema].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const selected = [];
+
+    for (const point of sortedByTime) {
+      const pointTs = new Date(point.timestamp).getTime();
+      const previous = selected[selected.length - 1];
+
+      if (!previous) {
+        selected.push(point);
+        continue;
+      }
+
+      const prevTs = new Date(previous.timestamp).getTime();
+      if (pointTs - prevTs >= MIN_GAP_MS) {
+        selected.push(point);
+        continue;
+      }
+
+      const isMoreExtreme = type === "high"
+        ? point.value > previous.value
+        : point.value < previous.value;
+      if (isMoreExtreme) selected[selected.length - 1] = point;
+    }
+
+    return selected.slice(0, 2).map((entry) => entry.timestamp);
+  };
+
+  const daySeries = measurements.filter((entry) => localDateKey(entry.timestamp) === dateKey);
+  for (let i = 1; i < daySeries.length - 1; i += 1) {
+    const prev = daySeries[i - 1].value;
+    const curr = daySeries[i].value;
+    const next = daySeries[i + 1].value;
+
+    if (curr >= prev && curr > next) highs.push(daySeries[i]);
+    if (curr <= prev && curr < next) lows.push(daySeries[i]);
   }
-  return { highs, lows };
+
+  return {
+    highs: pickDistinctExtrema(highs, "high"),
+    lows: pickDistinctExtrema(lows, "low"),
+  };
 }
 
 function renderTideCalendarCard(cardEl, title, tides) {
@@ -224,21 +258,33 @@ function getMeanTideWaterCm(characteristics, allMeasurements) {
   const mthwEntry = findByShortname("MThw");
   const mtnwEntry = findByShortname("MTnw");
 
+  const mthw = typeof mthwEntry?.value === "number" && Number.isFinite(mthwEntry.value)
+    ? mthwEntry.value
+    : null;
+  const mtnw = typeof mtnwEntry?.value === "number" && Number.isFinite(mtnwEntry.value)
+    ? mtnwEntry.value
+    : null;
+
   if (typeof mwEntry?.value === "number" && Number.isFinite(mwEntry.value)) {
-    return { value: mwEntry.value, source: "Kennwert MW (Pegelonline)" };
+    return { value: mwEntry.value, source: "Kennwert MW (Pegelonline)", mthw, mtnw };
   }
-  if (
-    typeof mthwEntry?.value === "number"
-    && Number.isFinite(mthwEntry.value)
-    && typeof mtnwEntry?.value === "number"
-    && Number.isFinite(mtnwEntry.value)
-  ) {
-    return { value: (mthwEntry.value + mtnwEntry.value) / 2, source: "Mittel aus MThw/MTnw (Pegelonline)" };
+  if (mthw != null && mtnw != null) {
+    return {
+      value: (mthw + mtnw) / 2,
+      source: "Mittel aus MThw/MTnw (Pegelonline)",
+      mthw,
+      mtnw,
+    };
   }
 
   const values = allMeasurements.map((m) => m.value).filter((v) => typeof v === "number");
-  if (!values.length) return { value: null, source: "kein Referenzwert verfügbar" };
-  return { value: (Math.min(...values) + Math.max(...values)) / 2, source: "Fallback aus Min/Max-Messreihe" };
+  if (!values.length) return { value: null, source: "kein Referenzwert verfügbar", mthw: null, mtnw: null };
+  return {
+    value: (Math.min(...values) + Math.max(...values)) / 2,
+    source: "Fallback aus Min/Max-Messreihe",
+    mthw: null,
+    mtnw: null,
+  };
 }
 
 function renderWaterCard(current, allMeasurements, meanReference) {
@@ -246,15 +292,27 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   const value = current?.value ?? null;
   const meanTideWaterCm = meanReference?.value ?? null;
   const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
-  const maxAbs = Math.max(
-    1,
-    ...allMeasurements.map((m) => Math.abs((m.value ?? 0) - (meanTideWaterCm ?? 0))),
-    Math.abs(anomaly ?? 0)
-  );
-  const scale = Math.min(1, Math.abs(anomaly ?? 0) / maxAbs);
-  const direction = (anomaly ?? 0) >= 0 ? 1 : -1;
-  const width = Math.max(0.08, scale) * 50;
-  const shift = direction < 0 ? -width : 0;
+
+  const LIMIT_CM = 250;
+  const normalizedAnomaly = anomaly == null ? 0 : Math.max(-LIMIT_CM, Math.min(LIMIT_CM, anomaly));
+  const anomalyPositionPercent = ((normalizedAnomaly + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
+
+  const mthwAnomaly = meanReference?.mthw != null && meanTideWaterCm != null
+    ? meanReference.mthw - meanTideWaterCm
+    : null;
+  const mtnwAnomaly = meanReference?.mtnw != null && meanTideWaterCm != null
+    ? meanReference.mtnw - meanTideWaterCm
+    : null;
+
+  const markerPosition = (deltaCm) => {
+    if (deltaCm == null) return null;
+    const clamped = Math.max(-LIMIT_CM, Math.min(LIMIT_CM, deltaCm));
+    return ((clamped + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
+  };
+
+  const mthwPos = markerPosition(mthwAnomaly);
+  const mtnwPos = markerPosition(mtnwAnomaly);
+
   const chipClass = anomaly > 0 ? "flut" : anomaly < 0 ? "ebbe" : "neutral";
   const chipLabel = anomaly > 0 ? "Flut (über Mittelwasser)" : anomaly < 0 ? "Ebbe (unter Mittelwasser)" : "Auf Mittelwasser";
 
@@ -262,9 +320,17 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     <h3>Tideanomalie jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}</p>
     <p class="tide-meta">0 cm = mittleres Tidewasser (${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
+    <p class="tide-meta">Skala: −2,5 m bis +2,5 m</p>
     <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p>
     <div class="anomaly-chip ${chipClass}">${chipLabel}</div>
-    <div class="tide-level"><span style="width:${width}%; transform: translateX(${shift}%);"></span></div>
+    <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2,5 Meter bis plus 2,5 Meter">
+      <span class="tide-level-fill" style="width:${anomalyPositionPercent}%;"></span>
+      <span class="tide-level-marker mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}"></span>
+      <span class="tide-level-marker mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}"></span>
+      <span class="tide-level-center"></span>
+    </div>
+    <div class="tide-scale-labels"><span>-2,5 m</span><span>0</span><span>+2,5 m</span></div>
+    <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p>
     <p class="tide-meta">${mapTrendLabel(current?.trend || "STEADY")}</p>
     <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
   `;

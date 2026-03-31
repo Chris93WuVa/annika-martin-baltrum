@@ -98,3 +98,78 @@ test('loadTideInfo zeigt Fehlermeldung wenn aktueller Wasserstand fehlt', async 
   await context.loadTideInfo();
   assert.ok(elements.get('tide-dashboard').innerHTML.includes('Tide-Daten konnten nicht geladen werden'));
 });
+
+
+test('renderWaterCard zeigt feste Skala und MThw/MTnw Marker', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 220, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 120 },
+        { timestamp: '2026-03-31T06:00:00.000Z', value: 250 },
+        { timestamp: '2026-03-31T12:00:00.000Z', value: 110 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MW', value: 180 },
+          { shortname: 'MThw', value: 300 },
+          { shortname: 'MTnw', value: 60 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+
+  const html = elements.get('card-water').innerHTML;
+  assert.ok(html.includes('Skala: −2,5 m bis +2,5 m'));
+  assert.ok(html.includes('-2,5 m'));
+  assert.ok(html.includes('+2,5 m'));
+  assert.ok(html.includes('tide-level-marker mtnw'));
+  assert.ok(html.includes('tide-level-marker mthw'));
+});
+
+
+test('THW/TNW Karten zeigen pro Tag maximal zwei Zeiten', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 180, trend: 'STEADY', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 100 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 160 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 140 },
+        { timestamp: '2026-03-31T03:00:00.000Z', value: 170 },
+        { timestamp: '2026-03-31T04:00:00.000Z', value: 90 },
+        { timestamp: '2026-03-31T10:00:00.000Z', value: 190 },
+        { timestamp: '2026-03-31T11:00:00.000Z', value: 130 },
+        { timestamp: '2026-03-31T16:00:00.000Z', value: 200 },
+        { timestamp: '2026-03-31T17:00:00.000Z', value: 120 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({ characteristicValues: [{ shortname: 'MW', value: 150 }] });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+
+  const todayHtml = elements.get('card-today').innerHTML;
+  const thwLine = /<strong>THW:\/strong>\s*([^<]+)/.exec(todayHtml)?.[1] || '';
+  const tnwLine = /<strong>TNW:\/strong>\s*([^<]+)/.exec(todayHtml)?.[1] || '';
+
+  const thwCount = thwLine.split('·').map((item) => item.trim()).filter(Boolean).length;
+  const tnwCount = tnwLine.split('·').map((item) => item.trim()).filter(Boolean).length;
+
+  assert.ok(thwCount <= 2, `THW enthält zu viele Zeiten: ${thwLine}`);
+  assert.ok(tnwCount <= 2, `TNW enthält zu viele Zeiten: ${tnwLine}`);
+});
