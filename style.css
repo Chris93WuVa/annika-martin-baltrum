@@ -235,30 +235,56 @@ main {
 
 .tide-level {
   margin-top: 12px;
-  height: 12px;
+  height: 14px;
   border-radius: 999px;
   background: rgba(255,255,255,0.23);
   overflow: hidden;
   position: relative;
 }
 
-.tide-level::before {
-  content: "";
+.tide-level-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9ee2f8, #f7feff);
+}
+
+.tide-level-center {
   position: absolute;
   left: 50%;
   top: -2px;
   bottom: -2px;
   width: 2px;
-  background: rgba(245, 253, 255, 0.9);
+  background: rgba(245, 253, 255, 0.95);
 }
 
-.tide-level span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  width: 50%;
-  transform-origin: left center;
-  background: linear-gradient(90deg, #9ee2f8, #f7feff);
+.tide-level-marker {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 0;
+  border-left: 2px dashed rgba(255, 255, 255, 0.85);
+}
+
+.tide-level-marker.mtnw {
+  border-left-color: rgba(255, 220, 170, 0.95);
+}
+
+.tide-level-marker.mthw {
+  border-left-color: rgba(171, 241, 255, 0.95);
+}
+
+.tide-scale-labels {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(228, 246, 251, 0.92);
+}
+
+
+.tide-markers {
+  margin-top: 4px;
 }
 
 .tide-card.loading {
