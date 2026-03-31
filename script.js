@@ -8,12 +8,17 @@ function scrollToSection(id) {
 // Galerie (Google Drive)
 const DRIVE_API_KEY = "";
 const MAX_GALLERY_IMAGES = 8;
+const DUMMY_GALLERY_IMAGE = "assets/0310-steffi-chris-schloss-gruenewald.JPG";
 const galleryGrid = document.getElementById("gallery-grid");
 const uploadLink = document.getElementById("upload-link");
 const lightbox = document.getElementById("lightbox");
 const lightboxImage = document.getElementById("lightbox-image");
 const lightboxClose = document.getElementById("lightbox-close");
+const lightboxPrev = document.getElementById("lightbox-prev");
+const lightboxNext = document.getElementById("lightbox-next");
 const tideDashboard = document.getElementById("tide-dashboard");
+let visibleGalleryImages = [];
+let currentLightboxIndex = -1;
 
 function extractFolderId(url) {
   if (!url) return "";
@@ -21,13 +26,36 @@ function extractFolderId(url) {
   return match ? match[1] : "";
 }
 
-function shuffle(array) {
-  return [...array].sort(() => Math.random() - 0.5);
+function daySeed() {
+  const now = new Date();
+  return now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
 }
 
-function openLightbox(src, alt) {
-  lightboxImage.src = src;
-  lightboxImage.alt = alt;
+function seededShuffle(array, seed) {
+  const list = [...array];
+  let state = seed || 1;
+  for (let i = list.length - 1; i > 0; i -= 1) {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    const j = Math.floor((state / 4294967296) * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+function pickDailyGalleryImages(images, baseSeed = 0) {
+  return seededShuffle(images, daySeed() + baseSeed).slice(0, MAX_GALLERY_IMAGES);
+}
+
+function updateLightboxImage() {
+  if (!visibleGalleryImages.length || currentLightboxIndex < 0) return;
+  const image = visibleGalleryImages[currentLightboxIndex];
+  lightboxImage.src = image.full;
+  lightboxImage.alt = image.name;
+}
+
+function openLightbox(index) {
+  currentLightboxIndex = index;
+  updateLightboxImage();
   lightbox.classList.add("open");
   lightbox.setAttribute("aria-hidden", "false");
 }
@@ -36,12 +64,27 @@ function closeLightbox() {
   lightbox.classList.remove("open");
   lightbox.setAttribute("aria-hidden", "true");
   lightboxImage.src = "";
+  currentLightboxIndex = -1;
+}
+
+function showNextImage() {
+  if (!visibleGalleryImages.length) return;
+  currentLightboxIndex = (currentLightboxIndex + 1) % visibleGalleryImages.length;
+  updateLightboxImage();
+}
+
+function showPreviousImage() {
+  if (!visibleGalleryImages.length) return;
+  currentLightboxIndex =
+    (currentLightboxIndex - 1 + visibleGalleryImages.length) % visibleGalleryImages.length;
+  updateLightboxImage();
 }
 
 function renderGallery(images) {
   galleryGrid.innerHTML = "";
+  visibleGalleryImages = images;
 
-  images.forEach((image) => {
+  images.forEach((image, index) => {
     const button = document.createElement("button");
     button.className = "gallery-item";
     button.type = "button";
@@ -52,9 +95,18 @@ function renderGallery(images) {
     img.loading = "lazy";
 
     button.appendChild(img);
-    button.addEventListener("click", () => openLightbox(image.full, image.name));
+    button.addEventListener("click", () => openLightbox(index));
     galleryGrid.appendChild(button);
   });
+}
+
+function renderDummyGallery() {
+  const fallbackImages = Array.from({ length: MAX_GALLERY_IMAGES }, (_, index) => ({
+    name: `Dummy-Bild ${index + 1}`,
+    thumb: DUMMY_GALLERY_IMAGE,
+    full: DUMMY_GALLERY_IMAGE,
+  }));
+  renderGallery(fallbackImages);
 }
 
 async function loadGalleryFromDrive() {
@@ -62,7 +114,7 @@ async function loadGalleryFromDrive() {
 
   const folderId = extractFolderId(uploadLink.href);
   if (!folderId) {
-    galleryGrid.innerHTML = "<p class='gallery-loading'>Kein gültiger Google-Drive-Ordner-Link gefunden.</p>";
+    renderDummyGallery();
     return;
   }
 
@@ -82,7 +134,7 @@ async function loadGalleryFromDrive() {
       }));
 
     if (images.length) {
-      renderGallery(shuffle(images).slice(0, MAX_GALLERY_IMAGES));
+      renderGallery(pickDailyGalleryImages(images, folderId.length));
       return;
     }
     throw new Error("Keine Drive-Bilder gefunden");
@@ -101,9 +153,9 @@ async function loadGalleryFromDrive() {
       }));
 
       if (!fallbackImages.length) throw new Error("Keine Bild-IDs gefunden");
-      renderGallery(shuffle(fallbackImages).slice(0, MAX_GALLERY_IMAGES));
+      renderGallery(pickDailyGalleryImages(fallbackImages, folderId.length));
     } catch (fallbackError) {
-      galleryGrid.innerHTML = "<p class='gallery-loading'>Galerie konnte nicht geladen werden. Bitte prüft die Ordnerfreigabe auf \"Jeder mit dem Link\".</p>";
+      renderDummyGallery();
     }
   }
 }
@@ -257,6 +309,14 @@ if (lightboxClose) {
   lightboxClose.addEventListener("click", closeLightbox);
 }
 
+if (lightboxPrev) {
+  lightboxPrev.addEventListener("click", showPreviousImage);
+}
+
+if (lightboxNext) {
+  lightboxNext.addEventListener("click", showNextImage);
+}
+
 if (lightbox) {
   lightbox.addEventListener("click", (event) => {
     if (event.target === lightbox) closeLightbox();
@@ -265,6 +325,8 @@ if (lightbox) {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeLightbox();
+  if (event.key === "ArrowLeft" && lightbox.classList.contains("open")) showPreviousImage();
+  if (event.key === "ArrowRight" && lightbox.classList.contains("open")) showNextImage();
 });
 
 loadGalleryFromDrive();
