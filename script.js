@@ -113,6 +113,8 @@ const PEGEL_UUID_NORDERNEY_RIFFGAT = "c0244c0e-6ae6-40cb-a967-4039b2a0ce7c";
 const PEGEL_CURRENT_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/currentmeasurement.json`;
 const PEGEL_FORECAST_WV_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/WV/measurements.json`;
 const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/measurements.json`;
+const PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W.json?includeCharacteristicValues=true`;
+const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 const todayCard = document.getElementById("card-today");
 const tomorrowCard = document.getElementById("card-tomorrow");
 const waterCard = document.getElementById("card-water");
@@ -125,6 +127,12 @@ function mapTrendLabel(trend) {
 
 function formatTime(isoTs) {
   return new Date(isoTs).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatSignedCm(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "–";
+  if (Math.abs(value) < 0.5) return "0 cm";
+  return `${value > 0 ? "+" : ""}${Math.round(value)} cm`;
 }
 
 function localDateKey(isoTs) {
@@ -157,21 +165,56 @@ function renderTideCalendarCard(cardEl, title, tides) {
   `;
 }
 
-function renderWaterCard(current, allMeasurements) {
-  if (!waterCard) return;
+function getMeanTideWaterCm(characteristics, allMeasurements) {
+  const normalized = Array.isArray(characteristics) ? characteristics : [];
+  const findByShortname = (shortname) => normalized.find((entry) => entry?.shortname === shortname);
+  const mwEntry = findByShortname("MW");
+  const mthwEntry = findByShortname("MThw");
+  const mtnwEntry = findByShortname("MTnw");
+
+  if (typeof mwEntry?.value === "number" && Number.isFinite(mwEntry.value)) {
+    return { value: mwEntry.value, source: "Kennwert MW (Pegelonline)" };
+  }
+  if (
+    typeof mthwEntry?.value === "number"
+    && Number.isFinite(mthwEntry.value)
+    && typeof mtnwEntry?.value === "number"
+    && Number.isFinite(mtnwEntry.value)
+  ) {
+    return { value: (mthwEntry.value + mtnwEntry.value) / 2, source: "Mittel aus MThw/MTnw (Pegelonline)" };
+  }
+
   const values = allMeasurements.map((m) => m.value).filter((v) => typeof v === "number");
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  if (!values.length) return { value: null, source: "kein Referenzwert verfügbar" };
+  return { value: (Math.min(...values) + Math.max(...values)) / 2, source: "Fallback aus Min/Max-Messreihe" };
+}
+
+function renderWaterCard(current, allMeasurements, meanReference) {
+  if (!waterCard) return;
   const value = current?.value ?? null;
-  const percent = value != null && max > min ? ((value - min) / (max - min)) * 100 : 0;
-  const barWidth = Math.max(6, Math.min(100, percent));
+  const meanTideWaterCm = meanReference?.value ?? null;
+  const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
+  const maxAbs = Math.max(
+    1,
+    ...allMeasurements.map((m) => Math.abs((m.value ?? 0) - (meanTideWaterCm ?? 0))),
+    Math.abs(anomaly ?? 0)
+  );
+  const scale = Math.min(1, Math.abs(anomaly ?? 0) / maxAbs);
+  const direction = (anomaly ?? 0) >= 0 ? 1 : -1;
+  const width = Math.max(0.08, scale) * 50;
+  const shift = direction < 0 ? -width : 0;
+  const chipClass = anomaly > 0 ? "flut" : anomaly < 0 ? "ebbe" : "neutral";
+  const chipLabel = anomaly > 0 ? "Flut (über Mittelwasser)" : anomaly < 0 ? "Ebbe (unter Mittelwasser)" : "Auf Mittelwasser";
 
   waterCard.innerHTML = `
-    <h3>Wasserstand aktuell</h3>
-    <p class="tide-value">${value != null ? `${Math.round(value)} cm` : "–"}</p>
-    <div class="tide-level"><span style="width:${barWidth}%"></span></div>
+    <h3>Tideanomalie jetzt</h3>
+    <p class="tide-value">${formatSignedCm(anomaly)}</p>
+    <p class="tide-meta">0 cm = mittleres Tidewasser (${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
+    <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p>
+    <div class="anomaly-chip ${chipClass}">${chipLabel}</div>
+    <div class="tide-level"><span style="width:${width}%; transform: translateX(${shift}%);"></span></div>
     <p class="tide-meta">${mapTrendLabel(current?.trend || "STEADY")}</p>
-    <p class="tide-meta">Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
+    <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
   `;
 }
 
@@ -194,10 +237,12 @@ async function loadTideInfo() {
     const startIso = start.toISOString();
     const endIso = end.toISOString();
 
-    const [current, forecast] = await Promise.all([
+    const [current, forecast, wSeries] = await Promise.all([
       fetchJson(PEGEL_CURRENT_URL),
       fetchJson(`${PEGEL_FORECAST_WV_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`),
+      fetchJson(PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL),
     ]);
+    if (typeof current?.value !== "number") throw new Error("Aktueller Wasserstand fehlt in API-Antwort");
 
     const series = Array.isArray(forecast) && forecast.length ? forecast : await fetchJson(`${PEGEL_MEASUREMENTS_W_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
     const cleaned = series
@@ -209,7 +254,7 @@ async function loadTideInfo() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowKey = tomorrow.toLocaleDateString("de-DE");
 
-    renderWaterCard(current, cleaned);
+    renderWaterCard(current, cleaned, getMeanTideWaterCm(wSeries?.characteristicValues, cleaned));
     renderTideCalendarCard(todayCard, "THW / TNW heute", getThwTnwByDate(cleaned, todayKey));
     renderTideCalendarCard(tomorrowCard, "THW / TNW morgen", getThwTnwByDate(cleaned, tomorrowKey));
   } catch (error) {
@@ -269,3 +314,4 @@ document.addEventListener("keydown", (event) => {
 
 loadGalleryFromDrive();
 loadTideInfo();
+setInterval(loadTideInfo, TIDE_REFRESH_INTERVAL_MS);
