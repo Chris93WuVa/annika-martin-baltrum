@@ -289,14 +289,27 @@ async function loadTideInfo() {
     const startIso = start.toISOString();
     const endIso = end.toISOString();
 
-    const [current, forecast, wSeries] = await Promise.all([
+    const [currentResult, forecastResult, seriesMetaResult] = await Promise.allSettled([
       fetchJson(PEGEL_CURRENT_URL),
       fetchJson(`${PEGEL_FORECAST_WV_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`),
       fetchJson(PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL),
     ]);
-    if (typeof current?.value !== "number") throw new Error("Aktueller Wasserstand fehlt in API-Antwort");
 
-    const series = Array.isArray(forecast) && forecast.length ? forecast : await fetchJson(`${PEGEL_MEASUREMENTS_W_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
+    if (currentResult.status !== "fulfilled" || typeof currentResult.value?.value !== "number") {
+      throw new Error("Aktueller Wasserstand fehlt in API-Antwort");
+    }
+
+    let series = Array.isArray(forecastResult.value) ? forecastResult.value : [];
+
+    if (!series.length) {
+      try {
+        const measured = await fetchJson(`${PEGEL_MEASUREMENTS_W_URL}?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`);
+        series = Array.isArray(measured) ? measured : [];
+      } catch (fallbackError) {
+        series = [];
+      }
+    }
+
     const cleaned = series
       .filter((item) => item && typeof item.value === "number" && item.timestamp)
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -306,7 +319,11 @@ async function loadTideInfo() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowKey = tomorrow.toLocaleDateString("de-DE");
 
-    renderWaterCard(current, cleaned, getMeanTideWaterCm(wSeries?.characteristicValues, cleaned));
+    const characteristics = seriesMetaResult.status === "fulfilled"
+      ? seriesMetaResult.value?.characteristicValues
+      : null;
+
+    renderWaterCard(currentResult.value, cleaned.length ? cleaned : [currentResult.value], getMeanTideWaterCm(characteristics, cleaned.length ? cleaned : [currentResult.value]));
     renderTideCalendarCard(todayCard, "THW / TNW heute", getThwTnwByDate(cleaned, todayKey));
     renderTideCalendarCard(tomorrowCard, "THW / TNW morgen", getThwTnwByDate(cleaned, tomorrowKey));
   } catch (error) {
