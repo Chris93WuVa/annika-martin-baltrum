@@ -288,6 +288,28 @@ iframe {
   box-shadow: 0 18px 40px rgba(0,0,0,0.45);
 }
 
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  border-radius: 999px;
+  width: 46px;
+  height: 46px;
+  font-size: 1.6rem;
+  color: white;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+}
+
+.lightbox-prev {
+  left: 18px;
+}
+
+.lightbox-next {
+  right: 18px;
+}
+
 .lightbox-close {
   position: absolute;
   top: 18px;
@@ -358,5 +380,11 @@ iframe {
 
   .quote-card {
     flex-basis: 85%;
+  }
+
+  .lightbox-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
   }
 }
