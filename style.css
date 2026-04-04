@@ -144,8 +144,7 @@ main {
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(2, auto);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -300,6 +299,29 @@ main {
   justify-content: space-between;
   font-size: 0.75rem;
   color: rgba(228, 246, 251, 0.92);
+}
+
+.tide-marker-labels {
+  position: relative;
+  margin-top: 2px;
+  height: 18px;
+}
+
+.tide-marker-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.74rem;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tide-marker-label.mtnw {
+  color: rgba(255, 220, 170, 0.98);
+}
+
+.tide-marker-label.mthw {
+  color: rgba(171, 241, 255, 0.98);
 }
 
 

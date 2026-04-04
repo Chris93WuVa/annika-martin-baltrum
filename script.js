@@ -38,12 +38,27 @@ function setupActiveNavHighlight() {
     },
     {
       root: null,
-      threshold: [0.35, 0.6],
-      rootMargin: "-30% 0px -45% 0px",
+      threshold: [0.12, 0.25, 0.5],
+      rootMargin: "-20% 0px -35% 0px",
     }
   );
 
   sections.forEach((section) => observer.observe(section));
+  const updateByViewportCenter = () => {
+    const viewportCenter = window.innerHeight / 2;
+    const closest = sections
+      .map((section) => {
+        const rect = section.getBoundingClientRect();
+        const distance = Math.abs(rect.top + rect.height / 2 - viewportCenter);
+        return { id: section.id, distance };
+      })
+      .sort((a, b) => a.distance - b.distance)[0];
+
+    if (closest?.id) setActiveButton(closest.id);
+  };
+
+  window.addEventListener("scroll", updateByViewportCenter, { passive: true });
+  window.addEventListener("resize", updateByViewportCenter);
   setActiveButton(sections[0].id);
 }
 
@@ -160,13 +175,7 @@ function renderEmbeddedDriveFolder(folderId) {
   iframe.loading = "lazy";
   iframe.referrerPolicy = "no-referrer";
   iframe.src = `https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}#grid`;
-
-  const hint = document.createElement("p");
-  hint.className = "gallery-loading";
-  hint.textContent = "Falls die Vorschaubilder nicht erscheinen: Ordnerfreigabe auf „Jeder mit dem Link“ prüfen.";
-
   galleryGrid.appendChild(iframe);
-  galleryGrid.appendChild(hint);
 }
 
 function normalizeProxyFiles(payload) {
@@ -273,9 +282,9 @@ const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/res
 const PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W.json?includeCharacteristicValues=true`;
 const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 function mapTrendLabel(trend) {
-  if (trend === "RISING") return "↗️";
-  if (trend === "FALLING") return "↘️";
-  return "➡️ stagnierend";
+  if (trend === "RISING") return "↗️ steigend";
+  if (trend === "FALLING") return "↘️ fallend";
+  return "➡️ gleichbleibend";
 }
 
 function formatSignedCm(value) {
@@ -347,7 +356,7 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   const meanTideWaterCm = meanReference?.value ?? null;
   const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
 
-  const LIMIT_CM = 200;
+  const LIMIT_CM = 250;
   const normalizedAnomaly = anomaly == null ? 0 : Math.max(-LIMIT_CM, Math.min(LIMIT_CM, anomaly));
   const anomalyPositionPercent = ((normalizedAnomaly + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
 
@@ -384,9 +393,13 @@ function renderWaterCard(current, allMeasurements, meanReference) {
       <span class="tide-level-marker mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}"></span>
       <span class="tide-level-center"></span>
     </div>
-    <div class="tide-scale-labels"><span>-2 m NHN</span><span>0 m NHN</span><span>+2 m NHN</span></div>
+    <div class="tide-marker-labels">
+      <span class="tide-marker-label mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}">MTnw</span>
+      <span class="tide-marker-label mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}">MThw</span>
+    </div>
+    <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
     <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p> -->
-    <p class="tide-meta">MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"} · MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"}</p>
+    <p class="tide-meta">MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"} · MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"}</p>
   `;
 }
 
