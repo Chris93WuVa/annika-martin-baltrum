@@ -66,5 +66,27 @@ Der aktuell eingetragene Link für Galerie und Upload ist:
 ## Hinweis zur Galerie-Anbindung
 
 Die Galerie nutzt primär die Google-Drive-API und zeigt zufällig bis zu 8 Bilder aus dem verlinkten Ordner.
-Falls kein `DRIVE_API_KEY` gesetzt ist, wird ein Fallback verwendet, der versucht die Bild-IDs direkt aus dem freigegebenen Ordner-Link zu lesen.
 Wichtig ist daher, dass der Ordner auf **„Jeder mit dem Link“** freigegeben ist.
+
+### Wichtiger Praxis-Hinweis
+
+Ein reiner Ordner-Link reicht im Browser meist **nicht** aus, um Dateilisten stabil auszulesen:
+
+- Ohne `DRIVE_API_KEY` blockiert Google die Drive-List-API häufig (403).
+- Das direkte Parsen der HTML-Ordnerseite scheitert oft an CORS oder geänderter HTML-Struktur.
+
+Deshalb gibt es zwei stabile Wege:
+
+1. **Frontend + Drive-API-Key**
+   - `DRIVE_API_KEY` in `script.js` setzen.
+   - In Google Cloud Drive API aktivieren.
+   - Ordner weiterhin öffentlich teilen.
+
+2. **Eigenen Proxy/Backend-Endpunkt nutzen**
+   - `DRIVE_PROXY_URL` in `script.js` setzen.
+   - Endpunkt akzeptiert `folderId` und liefert JSON zurück.
+   - Unterstützt werden entweder:
+     - `{ "files": [{ "id": "...", "name": "...", "thumbUrl": "...", "fullUrl": "..." }] }`
+     - oder direkt ein Array derselben Objekte.
+
+Damit bleibt die Galerie auch dann funktionsfähig, wenn Google die Browser-Zugriffe auf den Ordner-Link blockiert.
