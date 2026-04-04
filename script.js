@@ -168,9 +168,9 @@ const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/res
 const PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W.json?includeCharacteristicValues=true`;
 const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 function mapTrendLabel(trend) {
-  if (trend === "RISING") return "↗️ steigend";
-  if (trend === "FALLING") return "↘️ fallend";
-  return "➡️ gleichbleibend";
+  if (trend === "RISING") return "↗️";
+  if (trend === "FALLING") return "↘️";
+  return "➡️ stagierend";
 }
 
 function formatSignedCm(value) {
@@ -271,8 +271,8 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
     <p class="tide-meta">Referenz: 0 cm = mittleres Tidewasser (PNP ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
     <!-- <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p> -->
-    <div class="anomaly-chip ${chipClass}">${chipLabel}  ${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</div>
-    <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p>
+    <div class="anomaly-chip ${chipClass}">${chipLabel}   ${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</div>
+    <!-- <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p> -->
     <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2,5 Meter bis plus 2,5 Meter">
       <span class="tide-level-fill" style="width:${anomalyPositionPercent}%;"></span>
       <span class="tide-level-marker mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}"></span>
@@ -281,7 +281,7 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     </div>
     <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
     <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p> -->
-    <p class="tide-meta">MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"} · MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"}</p>
+    <p class="tide-meta">MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"} · MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"}</p>
   `;
 }
 
