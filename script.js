@@ -248,7 +248,7 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   waterCard.innerHTML = `
     <h3>Tideanomalie jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}</p>
-    <p class="tide-meta">Referenz: 0 cm = mittleres Tidewasser (Pegel ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
+    <p class="tide-meta">Referenz: 0 cm = mittleres Tidewasser (PNP ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
     <!-- <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p> -->
     <div class="anomaly-chip ${chipClass}">${chipLabel}</div>
     <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2,5 Meter bis plus 2,5 Meter">
