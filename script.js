@@ -181,10 +181,13 @@ function formatSignedCm(value) {
 
 function getMeanTideWaterCm(characteristics, allMeasurements) {
   const normalized = Array.isArray(characteristics) ? characteristics : [];
-  const findByShortname = (shortname) => normalized.find((entry) => entry?.shortname === shortname);
+  const findByShortname = (...shortnames) => {
+    const wanted = shortnames.map((name) => String(name).toLowerCase());
+    return normalized.find((entry) => wanted.includes(String(entry?.shortname || "").toLowerCase()));
+  };
   const mwEntry = findByShortname("MW");
-  const mthwEntry = findByShortname("MThw");
-  const mtnwEntry = findByShortname("MTnw");
+  const mthwEntry = findByShortname("MThw", "MTHW");
+  const mtnwEntry = findByShortname("MTnw", "MTNW", "MNTW");
 
   const mthw = typeof mthwEntry?.value === "number" && Number.isFinite(mthwEntry.value)
     ? mthwEntry.value
@@ -213,6 +216,23 @@ function getMeanTideWaterCm(characteristics, allMeasurements) {
     mthw: null,
     mtnw: null,
   };
+}
+
+
+function deriveTrendFromSeries(allMeasurements) {
+  const values = allMeasurements
+    .map((entry) => entry?.value)
+    .filter((value) => typeof value === "number" && Number.isFinite(value));
+
+  if (values.length < 3) return "STEADY";
+
+  const lastThree = values.slice(-3);
+  const diff1 = lastThree[1] - lastThree[0];
+  const diff2 = lastThree[2] - lastThree[1];
+  const avgSlope = (diff1 + diff2) / 2;
+
+  if (Math.abs(avgSlope) < 1) return "STEADY";
+  return avgSlope > 0 ? "RISING" : "FALLING";
 }
 
 function renderWaterCard(current, allMeasurements, meanReference) {
@@ -259,7 +279,8 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     </div>
     <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
     <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p>
-    <p class="tide-meta">${mapTrendLabel(current?.trend || "STEADY")}</p>
+    <p class="tide-meta">MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"} · MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"}</p>
+    <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p>
     <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
   `;
 }

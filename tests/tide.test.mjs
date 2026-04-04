@@ -133,3 +133,60 @@ test('renderWaterCard zeigt feste Skala und MThw/MTnw Marker', async () => {
   assert.ok(html.includes('tide-level-marker mtnw'));
   assert.ok(html.includes('tide-level-marker mthw'));
 });
+
+
+test('Trend wird aus den letzten drei Messwerten als steigend berechnet', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 205, trend: 'FALLING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 170 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 180 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 190 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MTHW', value: 300 },
+          { shortname: 'MNTW', value: 80 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+
+  const html = elements.get('card-water').innerHTML;
+  assert.ok(html.includes('↗️ steigend'));
+  assert.ok(html.includes('MThw: 300 cm · MTnw: 80 cm'));
+});
+
+test('Trend ist gleichbleibend bei kleiner Steigung (< 1 cm pro Intervall)', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 200, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 199.0 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 199.5 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 199.8 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({ characteristicValues: [{ shortname: 'MW', value: 180 }] });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+
+  const html = elements.get('card-water').innerHTML;
+  assert.ok(html.includes('➡️ gleichbleibend'));
+});
