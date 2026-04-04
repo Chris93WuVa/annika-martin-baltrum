@@ -314,13 +314,12 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   const mtnwPos = markerPosition(mtnwAnomaly);
 
   const chipClass = anomaly > 0 ? "flut" : anomaly < 0 ? "ebbe" : "neutral";
-  const chipLabel = anomaly > 0 ? "Flut (über Mittelwasser)" : anomaly < 0 ? "Ebbe (unter Mittelwasser)" : "Auf Mittelwasser";
+  const chipLabel = anomaly > 0 ? "Flut" : anomaly < 0 ? "Ebbe" : "Mittelwasser";
 
   waterCard.innerHTML = `
     <h3>Tideanomalie jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}</p>
-    <p class="tide-meta">0 cm = mittleres Tidewasser (${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
-    <p class="tide-meta">Skala: −2,5 m bis +2,5 m</p>
+    <p class="tide-meta">Referenz: 0 cm = mittleres Tidewasser (Pegel ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
     <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p>
     <div class="anomaly-chip ${chipClass}">${chipLabel}</div>
     <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2,5 Meter bis plus 2,5 Meter">
@@ -329,7 +328,7 @@ function renderWaterCard(current, allMeasurements, meanReference) {
       <span class="tide-level-marker mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}"></span>
       <span class="tide-level-center"></span>
     </div>
-    <div class="tide-scale-labels"><span>-2,5 m</span><span>0</span><span>+2,5 m</span></div>
+    <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
     <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p>
     <p class="tide-meta">${mapTrendLabel(current?.trend || "STEADY")}</p>
     <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
