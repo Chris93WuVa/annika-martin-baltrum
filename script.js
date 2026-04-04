@@ -268,9 +268,11 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   waterCard.innerHTML = `
     <h3>Tideanomalie jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}</p>
+    <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
     <p class="tide-meta">Referenz: 0 cm = mittleres Tidewasser (PNP ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
     <!-- <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p> -->
-    <div class="anomaly-chip ${chipClass}">${chipLabel}</div>
+    <div class="anomaly-chip ${chipClass}">${chipLabel}  ${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</div>
+    <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p>
     <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2,5 Meter bis plus 2,5 Meter">
       <span class="tide-level-fill" style="width:${anomalyPositionPercent}%;"></span>
       <span class="tide-level-marker mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}"></span>
@@ -278,10 +280,8 @@ function renderWaterCard(current, allMeasurements, meanReference) {
       <span class="tide-level-center"></span>
     </div>
     <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
-    <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p>
+    <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p> -->
     <p class="tide-meta">MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"} · MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"}</p>
-    <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p>
-    <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
   `;
 }
 
