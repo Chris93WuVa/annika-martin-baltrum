@@ -7,6 +7,7 @@ function scrollToSection(id) {
 
 // Galerie (Google Drive)
 const DRIVE_API_KEY = "";
+const DRIVE_PROXY_URL = "";
 const MAX_GALLERY_IMAGES = 8;
 const DUMMY_GALLERY_IMAGE = "assets/0310-steffi-chris-schloss-gruenewald.JPG";
 const galleryGrid = document.getElementById("gallery-grid");
@@ -109,6 +110,53 @@ function renderDummyGallery() {
   renderGallery(fallbackImages);
 }
 
+function renderEmbeddedDriveFolder(folderId) {
+  galleryGrid.innerHTML = "";
+  const iframe = document.createElement("iframe");
+  iframe.className = "gallery-drive-embed";
+  iframe.title = "Google-Drive-Galerie";
+  iframe.loading = "lazy";
+  iframe.referrerPolicy = "no-referrer";
+  iframe.src = `https://drive.google.com/embeddedfolderview?id=${encodeURIComponent(folderId)}#grid`;
+
+  const hint = document.createElement("p");
+  hint.className = "gallery-loading";
+  hint.textContent = "Falls die Vorschaubilder nicht erscheinen: Ordnerfreigabe auf „Jeder mit dem Link“ prüfen.";
+
+  galleryGrid.appendChild(iframe);
+  galleryGrid.appendChild(hint);
+}
+
+function normalizeProxyFiles(payload) {
+  const source = Array.isArray(payload) ? payload : payload?.files;
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((file) => {
+      if (typeof file !== "object" || file === null) return null;
+
+      const id = typeof file.id === "string" ? file.id : "";
+      const name = typeof file.name === "string" && file.name.trim() ? file.name : "Galeriebild";
+      const thumb = typeof file.thumbUrl === "string" ? file.thumbUrl : (id ? `https://drive.google.com/thumbnail?id=${id}&sz=w1200` : "");
+      const full = typeof file.fullUrl === "string" ? file.fullUrl : (id ? `https://drive.google.com/uc?export=view&id=${id}` : "");
+
+      if (!thumb || !full) return null;
+      return { name, thumb, full };
+    })
+    .filter(Boolean);
+}
+
+async function fetchImagesViaProxy(folderId) {
+  if (!DRIVE_PROXY_URL) return [];
+
+  const proxyUrl = new URL(DRIVE_PROXY_URL);
+  proxyUrl.searchParams.set("folderId", folderId);
+  const response = await fetch(proxyUrl.toString());
+  if (!response.ok) throw new Error("Drive-Proxy nicht erreichbar");
+  const payload = await response.json();
+  return normalizeProxyFiles(payload);
+}
+
 async function loadGalleryFromDrive() {
   if (!galleryGrid || !uploadLink) return;
 
@@ -118,29 +166,40 @@ async function loadGalleryFromDrive() {
     return;
   }
 
-  const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&${DRIVE_API_KEY ? `key=${DRIVE_API_KEY}&` : ""}pageSize=100`;
-
   try {
-    const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error("Drive API nicht erreichbar");
+    if (DRIVE_API_KEY) {
+      const apiUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${DRIVE_API_KEY}&pageSize=100`;
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error("Drive API nicht erreichbar");
 
-    const data = await response.json();
-    const images = (data.files || [])
-      .filter((file) => file.mimeType?.startsWith("image/"))
-      .map((file) => ({
-        name: file.name || "Galeriebild",
-        thumb: `https://drive.google.com/thumbnail?id=${file.id}&sz=w1200`,
-        full: `https://drive.google.com/uc?export=view&id=${file.id}`,
-      }));
+      const data = await response.json();
+      const images = (data.files || [])
+        .filter((file) => file.mimeType?.startsWith("image/"))
+        .map((file) => ({
+          name: file.name || "Galeriebild",
+          thumb: `https://drive.google.com/thumbnail?id=${file.id}&sz=w1200`,
+          full: `https://drive.google.com/uc?export=view&id=${file.id}`,
+        }));
 
-    if (images.length) {
-      renderGallery(pickDailyGalleryImages(images, folderId.length));
+      if (images.length) {
+        renderGallery(pickDailyGalleryImages(images, folderId.length));
+        return;
+      }
+    }
+
+    const proxyImages = await fetchImagesViaProxy(folderId);
+    if (proxyImages.length) {
+      renderGallery(pickDailyGalleryImages(proxyImages, folderId.length));
       return;
     }
+
     throw new Error("Keine Drive-Bilder gefunden");
   } catch (error) {
     try {
       const htmlResponse = await fetch(uploadLink.href);
+      if (typeof htmlResponse.text !== "function") {
+        throw new Error("HTML-Fallback nicht unterstützt");
+      }
       const html = await htmlResponse.text();
       const ids = Array.from(
         new Set([...html.matchAll(/\/file\/d\/([a-zA-Z0-9_-]{20,})/g)].map((match) => match[1]))
@@ -155,7 +214,11 @@ async function loadGalleryFromDrive() {
       if (!fallbackImages.length) throw new Error("Keine Bild-IDs gefunden");
       renderGallery(pickDailyGalleryImages(fallbackImages, folderId.length));
     } catch (fallbackError) {
-      renderDummyGallery();
+      console.warn(
+        "Google-Drive-Galerie konnte nicht als Raster geladen werden, verwende eingebettete Ordneransicht.",
+        fallbackError
+      );
+      renderEmbeddedDriveFolder(folderId);
     }
   }
 }
