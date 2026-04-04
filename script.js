@@ -347,7 +347,7 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   const meanTideWaterCm = meanReference?.value ?? null;
   const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
 
-  const LIMIT_CM = 250;
+  const LIMIT_CM = 200;
   const normalizedAnomaly = anomaly == null ? 0 : Math.max(-LIMIT_CM, Math.min(LIMIT_CM, anomaly));
   const anomalyPositionPercent = ((normalizedAnomaly + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
 
@@ -378,13 +378,13 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     <!-- <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p> -->
     <div class="anomaly-chip ${chipClass}">${chipLabel}   ${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</div>
     <!-- <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p> -->
-    <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2,5 Meter bis plus 2,5 Meter">
+    <div class="tide-level" role="img" aria-label="Tideanomalie-Skala von minus 2 Meter bis plus 2 Meter">
       <span class="tide-level-fill" style="width:${anomalyPositionPercent}%;"></span>
       <span class="tide-level-marker mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}"></span>
       <span class="tide-level-marker mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}"></span>
       <span class="tide-level-center"></span>
     </div>
-    <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
+    <div class="tide-scale-labels"><span>-2 m NHN</span><span>0 m NHN</span><span>+2 m NHN</span></div>
     <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p> -->
     <p class="tide-meta">MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"} · MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"}</p>
   `;
