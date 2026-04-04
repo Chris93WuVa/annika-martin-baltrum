@@ -167,18 +167,10 @@ const PEGEL_FORECAST_WV_URL = `https://www.pegelonline.wsv.de/webservices/rest-a
 const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/measurements.json`;
 const PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W.json?includeCharacteristicValues=true`;
 const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
-const todayCard = document.getElementById("card-today");
-const tomorrowCard = document.getElementById("card-tomorrow");
-const waterCard = document.getElementById("card-water");
-
 function mapTrendLabel(trend) {
   if (trend === "RISING") return "↗️ steigend";
   if (trend === "FALLING") return "↘️ fallend";
   return "➡️ gleichbleibend";
-}
-
-function formatTime(isoTs) {
-  return new Date(isoTs).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 }
 
 function formatSignedCm(value) {
@@ -187,76 +179,15 @@ function formatSignedCm(value) {
   return `${value > 0 ? "+" : ""}${Math.round(value)} cm`;
 }
 
-function localDateKey(isoTs) {
-  return new Date(isoTs).toLocaleDateString("de-DE");
-}
-
-function getThwTnwByDate(measurements, dateKey) {
-  const MIN_GAP_MS = 4 * 60 * 60 * 1000;
-  const highs = [];
-  const lows = [];
-
-  const pickDistinctExtrema = (extrema, type) => {
-    const sortedByTime = [...extrema].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    const selected = [];
-
-    for (const point of sortedByTime) {
-      const pointTs = new Date(point.timestamp).getTime();
-      const previous = selected[selected.length - 1];
-
-      if (!previous) {
-        selected.push(point);
-        continue;
-      }
-
-      const prevTs = new Date(previous.timestamp).getTime();
-      if (pointTs - prevTs >= MIN_GAP_MS) {
-        selected.push(point);
-        continue;
-      }
-
-      const isMoreExtreme = type === "high"
-        ? point.value > previous.value
-        : point.value < previous.value;
-      if (isMoreExtreme) selected[selected.length - 1] = point;
-    }
-
-    return selected.slice(0, 2).map((entry) => entry.timestamp);
-  };
-
-  const daySeries = measurements.filter((entry) => localDateKey(entry.timestamp) === dateKey);
-  for (let i = 1; i < daySeries.length - 1; i += 1) {
-    const prev = daySeries[i - 1].value;
-    const curr = daySeries[i].value;
-    const next = daySeries[i + 1].value;
-
-    if (curr >= prev && curr > next) highs.push(daySeries[i]);
-    if (curr <= prev && curr < next) lows.push(daySeries[i]);
-  }
-
-  return {
-    highs: pickDistinctExtrema(highs, "high"),
-    lows: pickDistinctExtrema(lows, "low"),
-  };
-}
-
-function renderTideCalendarCard(cardEl, title, tides) {
-  if (!cardEl) return;
-  const thw = tides.highs.length ? tides.highs.map(formatTime).join(" · ") : "keine Daten";
-  const tnw = tides.lows.length ? tides.lows.map(formatTime).join(" · ") : "keine Daten";
-  cardEl.innerHTML = `
-    <h3>${title}</h3>
-    <p class="tide-meta"><strong>THW:</strong> ${thw}</p>
-    <p class="tide-meta"><strong>TNW:</strong> ${tnw}</p>
-  `;
-}
-
 function getMeanTideWaterCm(characteristics, allMeasurements) {
   const normalized = Array.isArray(characteristics) ? characteristics : [];
-  const findByShortname = (shortname) => normalized.find((entry) => entry?.shortname === shortname);
+  const findByShortname = (...shortnames) => {
+    const wanted = shortnames.map((name) => String(name).toLowerCase());
+    return normalized.find((entry) => wanted.includes(String(entry?.shortname || "").toLowerCase()));
+  };
   const mwEntry = findByShortname("MW");
-  const mthwEntry = findByShortname("MThw");
-  const mtnwEntry = findByShortname("MTnw");
+  const mthwEntry = findByShortname("MThw", "MTHW");
+  const mtnwEntry = findByShortname("MTnw", "MTNW", "MNTW");
 
   const mthw = typeof mthwEntry?.value === "number" && Number.isFinite(mthwEntry.value)
     ? mthwEntry.value
@@ -287,7 +218,25 @@ function getMeanTideWaterCm(characteristics, allMeasurements) {
   };
 }
 
+
+function deriveTrendFromSeries(allMeasurements) {
+  const values = allMeasurements
+    .map((entry) => entry?.value)
+    .filter((value) => typeof value === "number" && Number.isFinite(value));
+
+  if (values.length < 3) return "STEADY";
+
+  const lastThree = values.slice(-3);
+  const diff1 = lastThree[1] - lastThree[0];
+  const diff2 = lastThree[2] - lastThree[1];
+  const avgSlope = (diff1 + diff2) / 2;
+
+  if (Math.abs(avgSlope) < 1) return "STEADY";
+  return avgSlope > 0 ? "RISING" : "FALLING";
+}
+
 function renderWaterCard(current, allMeasurements, meanReference) {
+  const waterCard = document.getElementById("card-water");
   if (!waterCard) return;
   const value = current?.value ?? null;
   const meanTideWaterCm = meanReference?.value ?? null;
@@ -330,7 +279,8 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     </div>
     <div class="tide-scale-labels"><span>-2,5 m NHN</span><span>0 m NHN</span><span>+2,5 m NHN</span></div>
     <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p>
-    <p class="tide-meta">${mapTrendLabel(current?.trend || "STEADY")}</p>
+    <p class="tide-meta">MThw: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"} · MTnw: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"}</p>
+    <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p>
     <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
   `;
 }
@@ -342,7 +292,7 @@ async function fetchJson(url) {
 }
 
 async function loadTideInfo() {
-  if (!tideDashboard || !todayCard || !tomorrowCard || !waterCard) return;
+  if (!tideDashboard) return;
 
   try {
     const now = new Date();
@@ -379,18 +329,11 @@ async function loadTideInfo() {
       .filter((item) => item && typeof item.value === "number" && item.timestamp)
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    const todayKey = start.toLocaleDateString("de-DE");
-    const tomorrow = new Date(start);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowKey = tomorrow.toLocaleDateString("de-DE");
-
     const characteristics = seriesMetaResult.status === "fulfilled"
       ? seriesMetaResult.value?.characteristicValues
       : null;
 
     renderWaterCard(currentResult.value, cleaned.length ? cleaned : [currentResult.value], getMeanTideWaterCm(characteristics, cleaned.length ? cleaned : [currentResult.value]));
-    renderTideCalendarCard(todayCard, "THW / TNW heute", getThwTnwByDate(cleaned, todayKey));
-    renderTideCalendarCard(tomorrowCard, "THW / TNW morgen", getThwTnwByDate(cleaned, tomorrowKey));
   } catch (error) {
     tideDashboard.innerHTML = "<div class='tide-card loading'>Tide-Daten konnten nicht geladen werden. Bitte später erneut versuchen.</div>";
   }
