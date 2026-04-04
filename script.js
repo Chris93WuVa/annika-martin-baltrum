@@ -170,7 +170,7 @@ const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
 function mapTrendLabel(trend) {
   if (trend === "RISING") return "↗️";
   if (trend === "FALLING") return "↘️";
-  return "➡️ stagierend";
+  return "➡️ stagnierend";
 }
 
 function formatSignedCm(value) {
