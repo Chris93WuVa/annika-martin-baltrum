@@ -167,8 +167,6 @@ const PEGEL_FORECAST_WV_URL = `https://www.pegelonline.wsv.de/webservices/rest-a
 const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/measurements.json`;
 const PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W.json?includeCharacteristicValues=true`;
 const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
-const waterCard = document.getElementById("card-water");
-
 function mapTrendLabel(trend) {
   if (trend === "RISING") return "↗️ steigend";
   if (trend === "FALLING") return "↘️ fallend";
@@ -218,6 +216,7 @@ function getMeanTideWaterCm(characteristics, allMeasurements) {
 }
 
 function renderWaterCard(current, allMeasurements, meanReference) {
+  const waterCard = document.getElementById("card-water");
   if (!waterCard) return;
   const value = current?.value ?? null;
   const meanTideWaterCm = meanReference?.value ?? null;
@@ -272,7 +271,7 @@ async function fetchJson(url) {
 }
 
 async function loadTideInfo() {
-  if (!tideDashboard || !waterCard) return;
+  if (!tideDashboard) return;
 
   try {
     const now = new Date();
