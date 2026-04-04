@@ -5,6 +5,48 @@ function scrollToSection(id) {
   target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function setupActiveNavHighlight() {
+  if (typeof document.querySelectorAll !== "function") return;
+  const navButtons = Array.from(document.querySelectorAll("nav .nav-button[data-target]"));
+  if (!navButtons.length || typeof IntersectionObserver !== "function") return;
+
+  const bySectionId = new Map(navButtons.map((button) => [button.dataset.target, button]));
+  const sections = navButtons
+    .map((button) => document.getElementById(button.dataset.target))
+    .filter(Boolean);
+  if (!sections.length) return;
+
+  const setActiveButton = (sectionId) => {
+    navButtons.forEach((button) => {
+      if (button.dataset.target === sectionId) {
+        button.classList.add("active");
+      } else {
+        button.classList.remove("active");
+      }
+    });
+  };
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+      if (!visible?.target?.id) return;
+      if (!bySectionId.has(visible.target.id)) return;
+      setActiveButton(visible.target.id);
+    },
+    {
+      root: null,
+      threshold: [0.35, 0.6],
+      rootMargin: "-30% 0px -45% 0px",
+    }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+  setActiveButton(sections[0].id);
+}
+
 // Galerie (Google Drive)
 const DRIVE_API_KEY = "";
 const DRIVE_PROXY_URL = "";
@@ -331,7 +373,7 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   waterCard.innerHTML = `
     <h3>Tideanomalie jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}</p>
-    <p class="tide-meta">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
+    <p class="tide-meta tide-reading">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
     <p class="tide-meta">Referenz: 0 cm = mittleres Tidewasser (PNP ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm` : "n/a"})</p>
     <!-- <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p> -->
     <div class="anomaly-chip ${chipClass}">${chipLabel}   ${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</div>
@@ -462,6 +504,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowRight" && lightbox.classList.contains("open")) showNextImage();
 });
 
+setupActiveNavHighlight();
 loadGalleryFromDrive();
 loadTideInfo();
 setInterval(loadTideInfo, TIDE_REFRESH_INTERVAL_MS);
