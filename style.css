@@ -103,6 +103,12 @@ nav button:hover {
   transform: translateY(-1px);
 }
 
+nav .nav-button.active {
+  background: #225263;
+  color: #f3fbff;
+  box-shadow: 0 6px 16px rgba(15, 44, 54, 0.35);
+}
+
 main {
   max-width: 1080px;
   margin: 0 auto;
@@ -161,6 +167,15 @@ main {
   cursor: zoom-in;
 }
 
+.gallery-drive-embed {
+  width: 100%;
+  min-height: 560px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.65);
+  grid-column: 1 / -1;
+}
+
 .tide-intro {
   margin-bottom: 14px;
 }
@@ -205,6 +220,11 @@ main {
 .tide-meta {
   margin: 6px 0 0;
   font-size: 0.92rem;
+}
+
+.tide-reading {
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .anomaly-chip {
