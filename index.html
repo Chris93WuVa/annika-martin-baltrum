@@ -21,8 +21,8 @@
 <nav>
   <button class="nav-button" data-target="programm" onclick="scrollToSection('programm')">Programm</button>
   <button class="nav-button" data-target="orte" onclick="scrollToSection('orte')">Standorte</button>
-  <button class="nav-button" data-target="fotos" onclick="scrollToSection('fotos')">Galerie</button>
   <button class="nav-button" data-target="upload" onclick="scrollToSection('upload')">Foto-Upload</button>
+  <button class="nav-button" data-target="fotos" onclick="scrollToSection('fotos')">Galerie</button>
   <button class="nav-button" data-target="tide-info" onclick="scrollToSection('tide-info')">Tide-Info</button>
   <button class="nav-button" data-target="ueber-uns" onclick="scrollToSection('ueber-uns')">Über uns</button>
 </nav>
@@ -33,15 +33,15 @@
     <ul>
       <li><strong>Freitag | 12. Juni</strong></li>
         <ul>
-          <li>10:00  Ankommen</li>
-          <li>12:00  Spazierengehen</li>
-          <li>18:00  Abendessen Pizzeria</li>
+          <li>10:00  Anreise</li>
+          <li>12:00  Erkunden</li>
+          <li>18:00  Abendessen Pizzeria Primavera</li>
         </ul>
       <li><strong>Samstag | 13. Juni</strong></li>
         <ul>
           <li>10:00  Trauung im alten Badeturm</li>
           <li>12:00  Feier bei Pipo</li>
-          <li>19:00  Abendessen und Besäufnis</li>
+          <li>19:00  Abendessen und Feier</li>
         </ul>
       <li><strong>Sonntag | 14. Juni</strong></li>
         <ul>
@@ -59,7 +59,7 @@
     </div>
 
     <div class="card">
-      <h3>📍 Pipo's Strandbude</h3>
+      <h3>📍 Pipo's Surfbude</h3>
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2307.416171531188!2d7.371213664697061!3d53.73026229685779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47b60d55c38603b3%3A0x7ae6f687e359eb0e!2sPipo&#39;s%20Surfbude!5e1!3m2!1sde!2sde!4v1774946189542!5m2!1sde!2sde" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
 
@@ -71,14 +71,6 @@
     <div class="card">
       <h3>📍 Nationalpark-Haus Baltrum</h3>
         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d686.061683032138!2d7.366777880053006!3d53.72641825700834!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47b60d20f223e52f%3A0xefa731ed12c26dba!2sNationalpark-Haus%20Baltrum!5e1!3m2!1sde!2sde!4v1774946815239!5m2!1sde!2sde" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-    </div>
-  </section>
-
-  <section id="fotos" class="content gallery">
-    <h2>Galerie</h2>
-    <p class="gallery-intro">✨ Fülle die Galerie über den Google-Drive-Ordner.</p>
-    <div id="gallery-grid" class="gallery-grid">
-      <p class="gallery-loading">Galerie wird geladen …</p>
     </div>
   </section>
 
@@ -96,16 +88,25 @@
       </a>
     </div>
   </section>
+  
+  <section id="fotos" class="content gallery">
+    <h2>Galerie</h2>
+    <p class="gallery-intro">✨ Fülle die Galerie über den Google-Drive Foto-Upload.</p>
+    <div id="gallery-grid" class="gallery-grid">
+      <p class="gallery-loading">Galerie wird geladen …</p>
+    </div>
+  </section>
 
   <section id="tide-info" class="content tide-section">
     <h2>Tide Info</h2>
-    <p class="tide-intro">🌊 Pegel Norderney Riffgat für Baltrum-Gezeiten.
+    <p class="tide-intro">🌊 
       <a
         id="pegelonline-link"
         href="https://www.pegelonline.wsv.de/gast/stammdaten?pegelnr=9360010"
         target="_blank">
-        Weitere Infos
+        Pegel
       </a>
+      Norderney Riffgat für Baltrum-Gezeiten.
     </p>
     <div id="tide-dashboard" class="tide-grid single-card">
       <article class="tide-card featured" id="card-water">
