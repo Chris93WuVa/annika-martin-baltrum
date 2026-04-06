@@ -285,7 +285,7 @@ let selectedVerticalMarkerKey = "stormflood";
 function mapTrendLabel(trend) {
   if (trend === "RISING") return " | ↗️ Flut";
   if (trend === "FALLING") return " | ↘️ Ebbe";
-  return "➡️ ";
+  return " | ➡️ ";
 }
 
 function formatSignedCm(value) {
@@ -300,9 +300,9 @@ function getMeanTideWaterCm(characteristics, allMeasurements) {
     const wanted = shortnames.map((name) => String(name).toLowerCase());
     return normalized.find((entry) => wanted.includes(String(entry?.shortname || "").toLowerCase()));
   };
-  const mwEntry = findByShortname("MW");
+  const mwEntry = findByShortname("MW", "MTW");
   const mthwEntry = findByShortname("MThw", "MTHW");
-  const mtnwEntry = findByShortname("MTnw", "MTNW", "MNTW");
+  const mtnwEntry = findByShortname("MTnw", "MTNW");
 
   const mthw = typeof mthwEntry?.value === "number" && Number.isFinite(mthwEntry.value)
     ? mthwEntry.value
@@ -395,11 +395,11 @@ function renderWaterCard(current, allMeasurements, meanReference) {
       <span class="tide-level-center"></span>
     </div>
     <div class="tide-marker-labels">
-      <span class="tide-marker-label mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}">MTnw</span>
-      <span class="tide-marker-label mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}">MThw</span>
+      <span class="tide-marker-label mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}">MTNW</span>
+      <span class="tide-marker-label mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}">MTHW</span>
     </div>
     <div class="tide-scale-labels"><span>-2 m NHN</span><span>0 m NHN</span><span>+2 m NHN</span></div>
-    <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTnw' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MThw' : ''}</p> -->
+    <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTNW' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MTHW' : ''}</p> -->
     <p class="tide-meta">MTNW: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"} · MTHW: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"}</p>
   `;
 }
@@ -452,7 +452,7 @@ function renderVerticalWaterCard(current, meanReference, trend) {
   const waterPos = markerPosition(anomaly) ?? 50;
   const trendClass = trend === "RISING" ? "rising" : trend === "FALLING" ? "falling" : "steady";
   const trendArrowClass = trend === "RISING" ? "up" : trend === "FALLING" ? "down" : "";
-  const trendLabel = trend === "RISING" ? "Flut" : trend === "FALLING" ? "Ebbe" : "gleichbleibend";
+  const trendLabel = trend === "RISING" ? "Flut" : trend === "FALLING" ? "Ebbe" : "";
   const extremaLabel = getWaterExtremaLabel(value, meanReference?.mtnw, meanReference?.mthw);
 
   verticalCard.innerHTML = `
@@ -478,7 +478,7 @@ function renderVerticalWaterCard(current, meanReference, trend) {
         </div>
       </div>
     </div>
-    <p class="tide-meta">Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"} · MTNW/MTHW als Anomalie relativ zu MTW (${formatMetersNhn(meanTideWaterCm)})</p>
+    <p class="tide-meta">Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"} · Anomalie relativ zu MTW (PNP ${formatMetersNhn(meanTideWaterCm)})</p>
   `;
 }
 
