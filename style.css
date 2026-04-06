@@ -189,6 +189,10 @@ main {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.tide-grid.stacked-cards {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .tide-card {
   background: rgba(255,255,255,0.88);
   border-radius: 16px;
@@ -203,6 +207,16 @@ main {
 
 .tide-card.featured .tide-value {
   color: #ffffff;
+}
+
+.tide-card-vertical {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.96), rgba(232, 246, 255, 0.92));
+  color: #174555;
+  border: 1px solid rgba(105, 163, 184, 0.25);
+}
+
+.tide-card-vertical .tide-value {
+  color: #1e6077;
 }
 
 .tide-card h3 {
@@ -331,6 +345,124 @@ main {
 
 .tide-card.loading {
   color: #315d6b;
+}
+
+.tide-vertical-layout {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.tide-coast-scene {
+  min-height: 270px;
+  border-radius: 16px;
+  border: 1px solid rgba(140, 182, 198, 0.35);
+  background: linear-gradient(180deg, #a9def0 0%, #e5f7ff 40%, #f6e5cb 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.tide-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(255,255,255,0.65), transparent 18%),
+    radial-gradient(circle at 76% 22%, rgba(255,255,255,0.52), transparent 20%);
+}
+
+.tide-dunes {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: 33%;
+  height: 36%;
+  background:
+    radial-gradient(120% 85% at 18% 100%, rgba(199, 180, 141, 0.92), transparent 56%),
+    radial-gradient(120% 88% at 50% 100%, rgba(216, 196, 155, 0.93), transparent 58%),
+    radial-gradient(120% 85% at 80% 100%, rgba(191, 175, 136, 0.9), transparent 54%);
+}
+
+.tide-shore {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 38%;
+  background:
+    linear-gradient(180deg, rgba(233, 214, 174, 0.92), rgba(226, 196, 143, 0.95));
+}
+
+.tide-water {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(180deg, rgba(85, 180, 210, 0.84), rgba(36, 122, 147, 0.95)),
+    repeating-linear-gradient(8deg, rgba(255,255,255,0.2), rgba(255,255,255,0.2) 9px, transparent 9px, transparent 20px);
+  border-top: 2px solid rgba(219, 245, 255, 0.9);
+  transition: height 0.5s ease;
+}
+
+.tide-current-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 3px solid rgba(225, 246, 255, 0.97);
+  box-shadow: 0 0 10px rgba(151, 223, 255, 0.75);
+}
+
+.tide-water-value {
+  position: absolute;
+  left: 12px;
+  transform: translateY(50%);
+  background: rgba(15, 71, 98, 0.84);
+  color: #f2fbff;
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 236, 255, 0.5);
+}
+
+.tide-scene-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform: translateY(50%);
+  border-top: 1px dashed rgba(255, 255, 255, 0.82);
+}
+
+.tide-scene-line span {
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(13, 56, 71, 0.66);
+  color: #ecfbff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.tide-scene-line.mtnw span {
+  background: rgba(113, 78, 42, 0.74);
+}
+
+.tide-scene-line.zero span {
+  background: rgba(35, 89, 109, 0.78);
+}
+
+.tide-ruler-static {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(18, 78, 98, 0.8);
 }
 
 .gallery img {
@@ -488,6 +620,15 @@ iframe {
 
   .tide-grid.single-card {
     grid-template-columns: 1fr;
+  }
+
+  .tide-vertical-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .tide-ruler-static {
+    min-height: 90px;
   }
 
   nav button {

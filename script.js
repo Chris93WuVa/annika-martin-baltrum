@@ -403,6 +403,69 @@ function renderWaterCard(current, allMeasurements, meanReference) {
   `;
 }
 
+function markerPositionPercent(valueCm, minCm, maxCm) {
+  if (typeof valueCm !== "number" || !Number.isFinite(valueCm)) return null;
+  if (maxCm <= minCm) return null;
+  const clamped = Math.max(minCm, Math.min(maxCm, valueCm));
+  return ((clamped - minCm) / (maxCm - minCm)) * 100;
+}
+
+function renderVerticalWaterCard(current, meanReference) {
+  const verticalCard = document.getElementById("card-water-vertical");
+  if (!verticalCard) return;
+
+  const LIMIT_CM = 200;
+  const value = typeof current?.value === "number" ? current.value : null;
+  const meanTideWaterCm = meanReference?.value ?? null;
+  const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
+  const normalizedAnomaly = anomaly == null ? 0 : Math.max(-LIMIT_CM, Math.min(LIMIT_CM, anomaly));
+  const waterPercent = ((normalizedAnomaly + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
+  const mthwAnomaly = meanReference?.mthw != null && meanTideWaterCm != null
+    ? meanReference.mthw - meanTideWaterCm
+    : null;
+  const mtnwAnomaly = meanReference?.mtnw != null && meanTideWaterCm != null
+    ? meanReference.mtnw - meanTideWaterCm
+    : null;
+  const zeroNhnAnomaly = meanTideWaterCm != null ? 0 - meanTideWaterCm : null;
+
+  const markerPosition = (deltaCm) => {
+    if (deltaCm == null) return null;
+    const clamped = Math.max(-LIMIT_CM, Math.min(LIMIT_CM, deltaCm));
+    return ((clamped + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
+  };
+
+  const mthwPos = markerPosition(mthwAnomaly);
+  const mtnwPos = markerPosition(mtnwAnomaly);
+  const zeroPos = markerPosition(zeroNhnAnomaly);
+  const waterPos = markerPosition(anomaly) ?? 50;
+
+  verticalCard.innerHTML = `
+    <h3>Wasserstand vertikal</h3>
+    <p class="tide-meta">Dynamische Skala analog zur Tideanomalie (±2 m um MTW)</p>
+    <div class="tide-vertical-layout">
+      <div class="tide-coast-scene" role="img" aria-label="Schematische Küstenansicht mit Dünen, Strand und Wasserstand">
+        <div class="tide-sky"></div>
+        <div class="tide-dunes"></div>
+        <div class="tide-shore"></div>
+        <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW</span></span>
+        <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW</span></span>
+        <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;${zeroPos == null ? "display:none;" : ""}"><span>0 m NHN</span></span>
+        <div class="tide-water" style="height:${waterPercent}%;"></div>
+        <span class="tide-current-line" style="bottom:${waterPos}%;"></span>
+        <div class="tide-water-value" style="bottom:${Math.max(8, Math.min(94, waterPos))}%;">
+          ${value != null ? `${Math.round(value)} cm` : "–"}
+        </div>
+      </div>
+      <div class="tide-ruler-static">
+        <span>+2 m</span>
+        <span>0 m</span>
+        <span>-2 m</span>
+      </div>
+    </div>
+    <p class="tide-meta">Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"} · MTNW/MTHW als Anomalie relativ zu MTW</p>
+  `;
+}
+
 async function fetchJson(url) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -451,7 +514,9 @@ async function loadTideInfo() {
       ? seriesMetaResult.value?.characteristicValues
       : null;
 
-    renderWaterCard(currentResult.value, cleaned.length ? cleaned : [currentResult.value], getMeanTideWaterCm(characteristics, cleaned.length ? cleaned : [currentResult.value]));
+    const meanReference = getMeanTideWaterCm(characteristics, cleaned.length ? cleaned : [currentResult.value]);
+    renderWaterCard(currentResult.value, cleaned.length ? cleaned : [currentResult.value], meanReference);
+    renderVerticalWaterCard(currentResult.value, meanReference);
   } catch (error) {
     tideDashboard.innerHTML = "<div class='tide-card loading'>Tide-Daten konnten nicht geladen werden. Bitte später erneut versuchen.</div>";
   }
