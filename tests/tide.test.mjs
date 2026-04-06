@@ -222,9 +222,69 @@ test('zweite Tide-Kachel rendert vertikale Küstenvisualisierung mit Marken', as
   const verticalHtml = elements.get('card-water-vertical').innerHTML;
   assert.ok(verticalHtml.includes('tide-coast-scene'));
   assert.ok(verticalHtml.includes('tide-water-value'));
-  assert.ok(verticalHtml.includes('220 cm'));
-  assert.ok(verticalHtml.includes('MTHW'));
-  assert.ok(verticalHtml.includes('MTNW'));
-  assert.ok(verticalHtml.includes('0 m NHN'));
+  assert.ok(verticalHtml.includes('+40 cm'));
+  assert.ok(verticalHtml.includes('MTHW · 3.00 m NHN'));
+  assert.ok(verticalHtml.includes('MTNW · 0.60 m NHN'));
+  assert.ok(verticalHtml.includes('MTW (0) · 1.80 m NHN'));
   assert.ok(verticalHtml.includes('tide-current-line'));
+  assert.ok(verticalHtml.includes('tide-trend-arrow down'));
+  assert.ok(verticalHtml.includes('tide-trend-text">Ebbe'));
+});
+
+test('vertikale Tide-Kachel zeigt Niedrigwasser/Hochwasser nahe MTNW/MTHW an', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 69, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 65 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 70 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 74 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MW', value: 180 },
+          { shortname: 'MThw', value: 300 },
+          { shortname: 'MTnw', value: 60 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+  const htmlLow = elements.get('card-water-vertical').innerHTML;
+  assert.ok(htmlLow.includes('Niedrigwasser'));
+
+  const fetchImplHigh = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 292, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 250 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 270 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 290 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MW', value: 180 },
+          { shortname: 'MThw', value: 300 },
+          { shortname: 'MTnw', value: 60 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const setupHigh = setupScriptWithFetch(fetchImplHigh);
+  await setupHigh.context.loadTideInfo();
+  const htmlHigh = setupHigh.elements.get('card-water-vertical').innerHTML;
+  assert.ok(htmlHigh.includes('Hochwasser'));
 });
