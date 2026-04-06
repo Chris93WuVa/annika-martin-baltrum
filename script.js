@@ -411,100 +411,60 @@ function markerPositionPercent(valueCm, minCm, maxCm) {
   return ((clamped - minCm) / (maxCm - minCm)) * 100;
 }
 
-function resolveCharacteristicValue(characteristics, aliases) {
-  const normalized = Array.isArray(characteristics) ? characteristics : [];
-  const wanted = aliases.map((item) => String(item).toLowerCase());
-  const match = normalized.find((entry) => wanted.includes(String(entry?.shortname || "").toLowerCase()));
-  return typeof match?.value === "number" && Number.isFinite(match.value) ? match.value : null;
-}
-
-function buildAdditionalVerticalMarkers(characteristics, meanReference) {
-  const list = [];
-  const stormFlood = resolveCharacteristicValue(characteristics, ["HHW", "HThw", "HSTHW", "HST"]);
-  if (stormFlood != null) {
-    list.push({ key: "stormflood", label: "Höchste Sturmflut", short: "HHW", value: stormFlood });
-  }
-
-  const tideRange = meanReference?.mthw != null && meanReference?.mtnw != null
-    ? Math.max(0, meanReference.mthw - meanReference.mtnw)
-    : null;
-  if (tideRange != null && meanReference?.value != null) {
-    list.push({
-      key: "tiderange",
-      label: "Tidehub",
-      short: "THb",
-      value: meanReference.value + tideRange / 2,
-      meta: `${Math.round(tideRange)} cm`,
-    });
-  }
-
-  const mhw = resolveCharacteristicValue(characteristics, ["MHW", "MThw"]);
-  if (mhw != null) {
-    list.push({ key: "mhw", label: "Mittleres Hochwasser", short: "MHW", value: mhw });
-  }
-
-  const mnw = resolveCharacteristicValue(characteristics, ["MNW", "MTnw", "MNTW"]);
-  if (mnw != null) {
-    list.push({ key: "mnw", label: "Mittleres Niedrigwasser", short: "MNW", value: mnw });
-  }
-
-  return list;
-}
-
-function renderVerticalWaterCard(current, meanReference, characteristics) {
+function renderVerticalWaterCard(current, meanReference) {
   const verticalCard = document.getElementById("card-water-vertical");
   if (!verticalCard) return;
 
+  const LIMIT_CM = 200;
   const value = typeof current?.value === "number" ? current.value : null;
-  const mean = typeof meanReference?.value === "number" ? meanReference.value : 0;
-  const minCm = mean - 250;
-  const maxCm = mean + 250;
-  const waterPercent = markerPositionPercent(value, minCm, maxCm) ?? 50;
-  const mthwPos = markerPositionPercent(meanReference?.mthw, minCm, maxCm);
-  const mtnwPos = markerPositionPercent(meanReference?.mtnw, minCm, maxCm);
-  const zeroPos = markerPositionPercent(0, minCm, maxCm);
-  const additional = buildAdditionalVerticalMarkers(characteristics, meanReference);
+  const meanTideWaterCm = meanReference?.value ?? null;
+  const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
+  const normalizedAnomaly = anomaly == null ? 0 : Math.max(-LIMIT_CM, Math.min(LIMIT_CM, anomaly));
+  const waterPercent = ((normalizedAnomaly + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
+  const mthwAnomaly = meanReference?.mthw != null && meanTideWaterCm != null
+    ? meanReference.mthw - meanTideWaterCm
+    : null;
+  const mtnwAnomaly = meanReference?.mtnw != null && meanTideWaterCm != null
+    ? meanReference.mtnw - meanTideWaterCm
+    : null;
+  const zeroNhnAnomaly = meanTideWaterCm != null ? 0 - meanTideWaterCm : null;
 
-  if (!additional.some((marker) => marker.key === selectedVerticalMarkerKey) && additional.length) {
-    selectedVerticalMarkerKey = additional[0].key;
-  }
+  const markerPosition = (deltaCm) => {
+    if (deltaCm == null) return null;
+    const clamped = Math.max(-LIMIT_CM, Math.min(LIMIT_CM, deltaCm));
+    return ((clamped + LIMIT_CM) / (2 * LIMIT_CM)) * 100;
+  };
 
-  const selectedMarker = additional.find((marker) => marker.key === selectedVerticalMarkerKey) || null;
-  const selectedMarkerPos = markerPositionPercent(selectedMarker?.value, minCm, maxCm);
+  const mthwPos = markerPosition(mthwAnomaly);
+  const mtnwPos = markerPosition(mtnwAnomaly);
+  const zeroPos = markerPosition(zeroNhnAnomaly);
+  const waterPos = markerPosition(anomaly) ?? 50;
 
   verticalCard.innerHTML = `
-    <h3>Wasserstand visuell</h3>
-    <p class="tide-value">${value != null ? `${Math.round(value)} cm` : "–"}</p>
-    <p class="tide-meta">Pegel relativ zu 0 m NHN · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
+    <h3>Wasserstand vertikal</h3>
+    <p class="tide-meta">Dynamische Skala analog zur Tideanomalie (±2 m um MTW)</p>
     <div class="tide-vertical-layout">
       <div class="tide-coast-scene" role="img" aria-label="Schematische Küstenansicht mit Dünen, Strand und Wasserstand">
         <div class="tide-sky"></div>
         <div class="tide-dunes"></div>
         <div class="tide-shore"></div>
+        <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW</span></span>
+        <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW</span></span>
+        <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;${zeroPos == null ? "display:none;" : ""}"><span>0 m NHN</span></span>
         <div class="tide-water" style="height:${waterPercent}%;"></div>
+        <span class="tide-current-line" style="bottom:${waterPos}%;"></span>
+        <div class="tide-water-value" style="bottom:${Math.max(8, Math.min(94, waterPos))}%;">
+          ${value != null ? `${Math.round(value)} cm` : "–"}
+        </div>
       </div>
-      <div class="tide-ruler">
-        <span class="tide-ruler-mark mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}">MTHW</span>
-        <span class="tide-ruler-mark mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}">MTNW</span>
-        <span class="tide-ruler-mark zero" style="bottom:${zeroPos ?? 0}%;${zeroPos == null ? "display:none;" : ""}">0 m NHN</span>
-        <span class="tide-ruler-mark custom" style="bottom:${selectedMarkerPos ?? 0}%;${selectedMarkerPos == null ? "display:none;" : ""}">${selectedMarker?.short || ""}${selectedMarker?.meta ? ` · ${selectedMarker.meta}` : ""}</span>
+      <div class="tide-ruler-static">
+        <span>+2 m</span>
+        <span>0 m</span>
+        <span>-2 m</span>
       </div>
     </div>
-    <label class="tide-select-label" for="vertical-marker-select">Weitere Marke:</label>
-    <select id="vertical-marker-select" class="tide-select">
-      ${additional.length
-        ? additional.map((marker) => `<option value="${marker.key}" ${marker.key === selectedVerticalMarkerKey ? "selected" : ""}>${marker.label}${marker.meta ? ` (${marker.meta})` : ""}</option>`).join("")
-        : "<option selected>Keine weiteren Marken verfügbar</option>"}
-    </select>
+    <p class="tide-meta">Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"} · MTNW/MTHW als Anomalie relativ zu MTW</p>
   `;
-
-  const markerSelect = document.getElementById("vertical-marker-select");
-  if (markerSelect && typeof markerSelect.addEventListener === "function" && additional.length) {
-    markerSelect.addEventListener("change", (event) => {
-      selectedVerticalMarkerKey = event.target.value;
-      renderVerticalWaterCard(current, meanReference, characteristics);
-    });
-  }
 }
 
 async function fetchJson(url) {
@@ -557,7 +517,7 @@ async function loadTideInfo() {
 
     const meanReference = getMeanTideWaterCm(characteristics, cleaned.length ? cleaned : [currentResult.value]);
     renderWaterCard(currentResult.value, cleaned.length ? cleaned : [currentResult.value], meanReference);
-    renderVerticalWaterCard(currentResult.value, meanReference, characteristics);
+    renderVerticalWaterCard(currentResult.value, meanReference);
   } catch (error) {
     tideDashboard.innerHTML = "<div class='tide-card loading'>Tide-Daten konnten nicht geladen werden. Bitte später erneut versuchen.</div>";
   }

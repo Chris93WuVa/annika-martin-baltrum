@@ -210,7 +210,6 @@ test('zweite Tide-Kachel rendert vertikale Küstenvisualisierung mit Marken', as
           { shortname: 'MW', value: 180 },
           { shortname: 'MThw', value: 300 },
           { shortname: 'MTnw', value: 60 },
-          { shortname: 'HHW', value: 430 },
         ],
       });
     }
@@ -222,8 +221,10 @@ test('zweite Tide-Kachel rendert vertikale Küstenvisualisierung mit Marken', as
 
   const verticalHtml = elements.get('card-water-vertical').innerHTML;
   assert.ok(verticalHtml.includes('tide-coast-scene'));
+  assert.ok(verticalHtml.includes('tide-water-value'));
+  assert.ok(verticalHtml.includes('220 cm'));
   assert.ok(verticalHtml.includes('MTHW'));
   assert.ok(verticalHtml.includes('MTNW'));
   assert.ok(verticalHtml.includes('0 m NHN'));
-  assert.ok(verticalHtml.includes('Weitere Marke'));
+  assert.ok(verticalHtml.includes('tide-current-line'));
 });
