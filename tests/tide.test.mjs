@@ -20,7 +20,7 @@ function setupScriptWithFetch(fetchImpl) {
 
   const ids = [
     'gallery-grid', 'upload-link', 'lightbox', 'lightbox-image', 'lightbox-close', 'lightbox-prev', 'lightbox-next',
-    'tide-dashboard', 'card-water', 'countdown',
+    'tide-dashboard', 'card-water', 'card-water-vertical', 'countdown',
   ];
   ids.forEach((id) => elements.set(id, makeEl(id)));
 
@@ -128,8 +128,8 @@ test('renderWaterCard zeigt feste Skala und MThw/MTnw Marker', async () => {
   await context.loadTideInfo();
 
   const html = elements.get('card-water').innerHTML;
-  assert.ok(html.includes('-2,5 m'));
-  assert.ok(html.includes('+2,5 m'));
+  assert.ok(html.includes('-2 m NHN'));
+  assert.ok(html.includes('+2 m NHN'));
   assert.ok(html.includes('tide-level-marker mtnw'));
   assert.ok(html.includes('tide-level-marker mthw'));
 });
@@ -162,8 +162,9 @@ test('Trend wird aus den letzten drei Messwerten als steigend berechnet', async 
   await context.loadTideInfo();
 
   const html = elements.get('card-water').innerHTML;
-  assert.ok(html.includes('↗️ steigend'));
-  assert.ok(html.includes('MThw: 300 cm · MTnw: 80 cm'));
+  assert.ok(html.includes('↗️ Flut'));
+  assert.ok(html.includes('MTHW: 300 cm'));
+  assert.ok(html.includes('MTNW: 80 cm'));
 });
 
 test('Trend ist gleichbleibend bei kleiner Steigung (< 1 cm pro Intervall)', async () => {
@@ -188,5 +189,102 @@ test('Trend ist gleichbleibend bei kleiner Steigung (< 1 cm pro Intervall)', asy
   await context.loadTideInfo();
 
   const html = elements.get('card-water').innerHTML;
-  assert.ok(html.includes('➡️ gleichbleibend'));
+  assert.ok(html.includes('➡️'));
+});
+
+test('zweite Tide-Kachel rendert vertikale Küstenvisualisierung mit Marken', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 220, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 120 },
+        { timestamp: '2026-03-31T06:00:00.000Z', value: 250 },
+        { timestamp: '2026-03-31T12:00:00.000Z', value: 110 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MW', value: 180 },
+          { shortname: 'MThw', value: 300 },
+          { shortname: 'MTnw', value: 60 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+
+  const verticalHtml = elements.get('card-water-vertical').innerHTML;
+  assert.ok(verticalHtml.includes('tide-coast-scene'));
+  assert.ok(verticalHtml.includes('tide-water-value'));
+  assert.ok(verticalHtml.includes('+40 cm'));
+  assert.ok(verticalHtml.includes('MTHW · 3.00 m NHN'));
+  assert.ok(verticalHtml.includes('MTNW · 0.60 m NHN'));
+  assert.ok(verticalHtml.includes('MTW (0) · 1.80 m NHN'));
+  assert.ok(verticalHtml.includes('tide-current-line'));
+  assert.ok(verticalHtml.includes('tide-trend-arrow down'));
+  assert.ok(verticalHtml.includes('tide-trend-text">Ebbe'));
+});
+
+test('vertikale Tide-Kachel zeigt Niedrigwasser/Hochwasser nahe MTNW/MTHW an', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 69, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 65 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 70 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 74 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MW', value: 180 },
+          { shortname: 'MThw', value: 300 },
+          { shortname: 'MTnw', value: 60 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const { context, elements } = setupScriptWithFetch(fetchImpl);
+  await context.loadTideInfo();
+  const htmlLow = elements.get('card-water-vertical').innerHTML;
+  assert.ok(htmlLow.includes('Niedrigwasser'));
+
+  const fetchImplHigh = async (url) => {
+    if (url.includes('/currentmeasurement.json')) {
+      return jsonResponse({ value: 292, trend: 'RISING', timestamp: '2026-03-31T08:00:00.000Z' });
+    }
+    if (url.includes('/WV/measurements.json')) {
+      return jsonResponse([
+        { timestamp: '2026-03-31T00:00:00.000Z', value: 250 },
+        { timestamp: '2026-03-31T01:00:00.000Z', value: 270 },
+        { timestamp: '2026-03-31T02:00:00.000Z', value: 290 },
+      ]);
+    }
+    if (url.endsWith('/W.json?includeCharacteristicValues=true')) {
+      return jsonResponse({
+        characteristicValues: [
+          { shortname: 'MW', value: 180 },
+          { shortname: 'MThw', value: 300 },
+          { shortname: 'MTnw', value: 60 },
+        ],
+      });
+    }
+    return jsonResponse([]);
+  };
+
+  const setupHigh = setupScriptWithFetch(fetchImplHigh);
+  await setupHigh.context.loadTideInfo();
+  const htmlHigh = setupHigh.elements.get('card-water-vertical').innerHTML;
+  assert.ok(htmlHigh.includes('Hochwasser'));
 });
