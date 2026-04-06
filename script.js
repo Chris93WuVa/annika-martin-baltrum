@@ -281,6 +281,7 @@ const PEGEL_FORECAST_WV_URL = `https://www.pegelonline.wsv.de/webservices/rest-a
 const PEGEL_MEASUREMENTS_W_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/measurements.json`;
 const PEGEL_W_SERIES_WITH_CHARACTERISTICS_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W.json?includeCharacteristicValues=true`;
 const TIDE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+let selectedVerticalMarkerKey = "stormflood";
 function mapTrendLabel(trend) {
   if (trend === "RISING") return " | ↗️ Flut";
   if (trend === "FALLING") return " | ↘️ Ebbe";
