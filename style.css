@@ -400,7 +400,7 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 83%;
+  height: 86%;
   background:
     linear-gradient(180deg, rgba(238, 217, 176, 0.65), rgba(230, 200, 150, 0.95)),
     radial-gradient(120% 88% at 50% 100%, rgba(216, 196, 155, 0.93), transparent 50%);
