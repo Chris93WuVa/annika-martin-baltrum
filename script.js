@@ -419,8 +419,8 @@ function formatMetersNhn(cmValue) {
 
 function getWaterExtremaLabel(value, mtnw, mthw) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "";
-  if (typeof mtnw === "number" && Number.isFinite(mtnw) && value <= mtnw + 10) return "Niedrigwasser";
-  if (typeof mthw === "number" && Number.isFinite(mthw) && value >= mthw - 10) return "Hochwasser";
+  if (typeof mtnw === "number" && Number.isFinite(mtnw) && value <= mtnw + 20) return "Niedrigwasser";
+  if (typeof mthw === "number" && Number.isFinite(mthw) && value >= mthw - 20) return "Hochwasser";
   return "Mittelwasser";
 }
 
