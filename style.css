@@ -403,7 +403,7 @@ main {
   bottom: 0;
   height: 82%;
   background:
-    linear-gradient(180deg, rgba(238, 217, 176, 0.92), rgba(230, 200, 150, 0.5));
+    linear-gradient(180deg, rgba(238, 217, 176, 0.5), rgba(230, 200, 150, 0.95));
   z-index: 0;
 }
 
