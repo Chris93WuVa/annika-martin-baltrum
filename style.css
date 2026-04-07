@@ -389,9 +389,9 @@ main {
   bottom: 82%;
   height: 13%;
   background:
-    radial-gradient(120% 85% at 18% 80%, rgba(199, 180, 141, 0.92), transparent 56%),
-    radial-gradient(120% 88% at 50% 80%, rgba(216, 196, 155, 0.93), transparent 58%),
-    radial-gradient(120% 85% at 80% 80%, rgba(196, 177, 141, 0.9), transparent 54%);
+    radial-gradient(110% 85% at 18% 75%, rgba(199, 180, 141, 0.92), transparent 56%),
+    radial-gradient(110% 88% at 50% 75%, rgba(216, 196, 155, 0.93), transparent 58%),
+    radial-gradient(110% 85% at 80% 75%, rgba(196, 177, 141, 0.9), transparent 54%);
   z-index: 1;
 }
 
