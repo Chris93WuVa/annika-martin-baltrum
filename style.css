@@ -392,7 +392,7 @@ main {
   background:
     radial-gradient(120% 85% at 18% 100%, rgba(199, 180, 141, 0.92), transparent 56%),
     radial-gradient(120% 88% at 50% 100%, rgba(216, 196, 155, 0.93), transparent 58%),
-    radial-gradient(120% 85% at 80% 100%, rgba(191, 175, 136, 0.9), transparent 54%);
+    radial-gradient(120% 85% at 80% 100%, rgba(196, 177, 141, 0.9), transparent 54%);
   z-index: 1;
 }
 
@@ -401,9 +401,9 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 80%;
+  height: 82%;
   background:
-    linear-gradient(180deg, rgba(238, 217, 176, 0.92), rgba(230, 200, 150, 0.95));
+    linear-gradient(180deg, rgba(238, 217, 176, 0.92), rgba(230, 200, 150, 0.5));
   z-index: 0;
 }
 
@@ -471,7 +471,7 @@ main {
   left: 0;
   right: 0;
   border-top: 4px solid rgba(46, 99, 181, 0.97);
-  box-shadow: 0 0 10px rgba(151, 223, 255, 0.75);
+  box-shadow: 0 0 8px rgba(175, 223, 255, 0.75);
   z-index: 5;
 }
 
