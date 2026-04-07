@@ -428,7 +428,7 @@ function renderVerticalWaterCard(current, meanReference, trend) {
   const verticalCard = document.getElementById("card-water-vertical");
   if (!verticalCard) return;
 
-  const LIMIT_CM = 250;
+  const LIMIT_CM = 240;
   const value = typeof current?.value === "number" ? current.value : null;
   const meanTideWaterCm = meanReference?.value ?? null;
   const anomaly = value != null && meanTideWaterCm != null ? value - meanTideWaterCm : null;
