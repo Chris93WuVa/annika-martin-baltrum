@@ -459,7 +459,7 @@ function renderVerticalWaterCard(current, meanReference, trend) {
   verticalCard.innerHTML = `
     <h3>Wasserstand jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}${extremaLabel ? ` <span class="tide-extrema-tag">${extremaLabel}</span>` : ""}</p>
-    <p class="tide-meta">Dynamische Visualisierung Tideanomalie Baltrum</p>
+    <p class="tide-meta">Dynamische Visualisierung des Wasserstands auf Baltrum</p>
     <div class="tide-vertical-layout">
       <div class="tide-coast-scene" role="img" aria-label="Schematische Küstenansicht mit Dünen, Strand und Wasserstand">
         <div class="tide-trend-indicator ${trendClass}">
