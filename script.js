@@ -569,11 +569,11 @@ updateCountdown();
 const PASSWORD = "baltrum2026";
 
 if (!sessionStorage.getItem("accessGranted")) {
-  const input = prompt("Passwort bitte...");
+  const input = prompt("Bitte Passwort eingeben...");
   if (input === PASSWORD) {
     sessionStorage.setItem("accessGranted", "true");
   } else {
-    document.body.innerHTML = "<h2 style='text-align:center;margin-top:20%'>Kein Zugriff</h2>";
+    document.body.innerHTML = "<h2 style='text-align:center;margin-top:20%'>Zugriff verweigert!</h2>";
   }
 }
 
