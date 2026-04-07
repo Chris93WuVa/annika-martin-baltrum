@@ -377,7 +377,7 @@ main {
 
 .tide-sky {
   position: absolute;
-  inset: 0 0 7.25% 0;
+  inset: 0 0 5% 0;
   background:
     radial-gradient(circle at 14% 18%, rgba(255,255,255,0.65), transparent 18%),
     radial-gradient(circle at 76% 22%, rgba(255,255,255,0.52), transparent 20%);
@@ -387,8 +387,8 @@ main {
   position: absolute;
   left: -8%;
   right: -8%;
-  bottom: 65%;
-  height: 20%;
+  bottom: 85%;
+  height: 10%;
   background:
     radial-gradient(120% 85% at 18% 100%, rgba(199, 180, 141, 0.92), transparent 56%),
     radial-gradient(120% 88% at 50% 100%, rgba(216, 196, 155, 0.93), transparent 58%),
@@ -401,7 +401,7 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 50%;
+  height: 80%;
   background:
     linear-gradient(180deg, rgba(233, 214, 174, 0.92), rgba(226, 196, 143, 0.95));
   z-index: 0;
