@@ -389,8 +389,8 @@ main {
   position: absolute;
   left: -8%;
   right: -8%;
-  bottom: 33%;
-  height: 36%;
+  bottom: 20%;
+  height: 28%;
   background:
     radial-gradient(120% 85% at 18% 100%, rgba(199, 180, 141, 0.92), transparent 56%),
     radial-gradient(120% 88% at 50% 100%, rgba(216, 196, 155, 0.93), transparent 58%),
@@ -402,7 +402,7 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 38%;
+  height: 32%;
   background:
     linear-gradient(180deg, rgba(233, 214, 174, 0.92), rgba(226, 196, 143, 0.95));
 }
@@ -415,7 +415,7 @@ main {
   background:
     linear-gradient(180deg, rgba(85, 180, 210, 0.84), rgba(36, 122, 147, 0.95)),
     repeating-linear-gradient(8deg, rgba(255,255,255,0.2), rgba(255,255,255,0.2) 9px, transparent 9px, transparent 20px);
-  border-top: 2px solid rgba(219, 245, 255, 0.9);
+  border-top: 2px dashed rgba(219, 245, 255, 0.9);
   transition: height 0.5s ease;
   z-index: 2;
 }
@@ -572,7 +572,7 @@ main {
 }
 
 iframe {
-  width: 100%;
+  width: 95%;
   height: 300px;
   border-radius: 16px;
   border: 0;
