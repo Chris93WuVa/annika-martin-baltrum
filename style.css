@@ -464,7 +464,7 @@ main {
   position: absolute;
   left: 0;
   right: 0;
-  border-top: 3px solid rgba(225, 246, 255, 0.97);
+  border-top: 2px solid rgba(225, 246, 255, 0.97);
   box-shadow: 0 0 10px rgba(151, 223, 255, 0.75);
   z-index: 5;
 }
