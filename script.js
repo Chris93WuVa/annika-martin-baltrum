@@ -303,7 +303,7 @@ function getMeanTideWaterCm(characteristics, allMeasurements) {
   };
   const mwEntry = findByShortname("MW", "MTW");
   const mthwEntry = findByShortname("MThw", "MTHW");
-  const mtnwEntry = findByShortname("MTnw", "MTNW");
+  const mtnwEntry = findByShortname("MTnw", "MTNW", "MNTW");
 
   const mthw = typeof mthwEntry?.value === "number" && Number.isFinite(mthwEntry.value)
     ? mthwEntry.value
@@ -471,9 +471,9 @@ function renderVerticalWaterCard(current, meanReference, trend) {
         <div class="tide-shore"></div>
         <div class="tide-water" style="height:${waterPercent}%;"></div>
         <span class="tide-current-line" style="bottom:${waterPos}%;"></span>
-        <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW · +1.23 m NHN</span></span>
-        <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW · -1.24 m NHN</span></span>
-        <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;"><span>MTW · 0 m NHN</span></span>
+        <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW · ${formatMetersNhn(meanReference?.mthw)}</span></span>
+        <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW · ${formatMetersNhn(meanReference?.mtnw)}</span></span>
+        <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;"><span>MTW (0) · ${formatMetersNhn(meanTideWaterCm)}</span></span>
         <!-- ${formatMetersNhn(meanTideWaterCm)} ${formatMetersNhn(meanReference?.mthw)} ${formatMetersNhn(meanReference?.mtnw)} -->
         <div class="tide-water-value" style="bottom:${Math.max(8, Math.min(94, waterPos))}%;">
           ${formatSignedCm(anomaly)}${extremaLabel ? ` · ${extremaLabel}` : ""}
