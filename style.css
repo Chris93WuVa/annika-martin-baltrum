@@ -210,7 +210,7 @@ main {
 }
 
 .tide-card-vertical {
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.96), rgba(232, 246, 255, 0.92));
+  background: linear-gradient(165deg, rgba(240, 250, 255, 0.96), rgba(190, 220, 251, 0.92));
   color: #174555;
   border: 1px solid rgba(105, 163, 184, 0.25);
 }
@@ -387,8 +387,8 @@ main {
   position: absolute;
   left: -8%;
   right: -8%;
-  bottom: 80%;
-  height: 10%;
+  bottom: 82%;
+  height: 13%;
   background:
     radial-gradient(120% 85% at 18% 100%, rgba(199, 180, 141, 0.92), transparent 56%),
     radial-gradient(120% 88% at 50% 100%, rgba(216, 196, 155, 0.93), transparent 58%),
@@ -403,7 +403,7 @@ main {
   bottom: 0;
   height: 80%;
   background:
-    linear-gradient(180deg, rgba(233, 214, 174, 0.92), rgba(226, 196, 143, 0.95));
+    linear-gradient(180deg, rgba(238, 217, 176, 0.92), rgba(230, 200, 150, 0.95));
   z-index: 0;
 }
 
