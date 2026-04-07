@@ -459,7 +459,7 @@ function renderVerticalWaterCard(current, meanReference, trend) {
   verticalCard.innerHTML = `
     <h3>Wasserstand jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}${extremaLabel ? ` <span class="tide-extrema-tag">${extremaLabel}</span>` : ""}</p>
-    <p class="tide-meta">Dynamische Tideanomalie Baltrum:</p>
+    <p class="tide-meta">Dynamische Visualisierung Tideanomalie Baltrum</p>
     <div class="tide-vertical-layout">
       <div class="tide-coast-scene" role="img" aria-label="Schematische Küstenansicht mit Dünen, Strand und Wasserstand">
         <div class="tide-trend-indicator ${trendClass}">
@@ -469,12 +469,12 @@ function renderVerticalWaterCard(current, meanReference, trend) {
         <div class="tide-sky"></div>
         <div class="tide-dunes"></div>
         <div class="tide-shore"></div>
+        <div class="tide-water" style="height:${waterPercent}%;"></div>
+        <span class="tide-current-line" style="bottom:${waterPos}%;"></span>
         <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW · +1.23 m NHN</span></span>
         <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW · -1.24 m NHN</span></span>
         <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;"><span>MTW · 0 m NHN</span></span>
         <!-- ${formatMetersNhn(meanTideWaterCm)} ${formatMetersNhn(meanReference?.mthw)} ${formatMetersNhn(meanReference?.mtnw)} -->
-        <div class="tide-water" style="height:${waterPercent}%;"></div>
-        <span class="tide-current-line" style="bottom:${waterPos}%;"></span>
         <div class="tide-water-value" style="bottom:${Math.max(8, Math.min(94, waterPos))}%;">
           ${formatSignedCm(anomaly)}${extremaLabel ? ` · ${extremaLabel}` : ""}
         </div>
