@@ -274,6 +274,7 @@ async function loadGalleryFromDrive() {
   }
 }
 
+
 // Tide Info (Pegelonline)
 const PEGEL_UUID_NORDERNEY_RIFFGAT = "c0244c0e-6ae6-40cb-a967-4039b2a0ce7c";
 const PEGEL_CURRENT_URL = `https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/${PEGEL_UUID_NORDERNEY_RIFFGAT}/W/currentmeasurement.json`;
@@ -384,7 +385,6 @@ function renderWaterCard(current, allMeasurements, meanReference) {
     <h3>Tideanomalie jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}</p>
     <p class="tide-meta tide-reading">Messwert: ${value != null ? `${Math.round(value)} cm` : "–"} · Stand: ${current?.timestamp ? new Date(current.timestamp).toLocaleString("de-DE") : "unbekannt"}</p>
-    <p class="tide-meta">Referenz: PNP ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm NHN` : "n/a"}</p>
     <!-- <p class="tide-meta">Referenz: ${meanReference?.source || "unbekannt"}</p> -->
     <div class="anomaly-chip ${chipClass}">${chipLabel}   ${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</div>
     <!-- <p class="tide-meta">${mapTrendLabel(deriveTrendFromSeries(allMeasurements))}</p> -->
@@ -395,12 +395,13 @@ function renderWaterCard(current, allMeasurements, meanReference) {
       <span class="tide-level-center"></span>
     </div>
     <div class="tide-marker-labels">
-      <span class="tide-marker-label mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}">MTNW</span>
-      <span class="tide-marker-label mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}">MTHW</span>
+      <span class="tide-marker-label mtnw" style="left:${mtnwPos ?? 0}%;${mtnwPos == null ? 'display:none;' : ''}">MTNW (-1.24 m)</span>
+      <span class="tide-marker-label mthw" style="left:${mthwPos ?? 0}%;${mthwPos == null ? 'display:none;' : ''}">MTHW (+1.23 m)</span>
     </div>
     <div class="tide-scale-labels"><span>-2 m NHN</span><span>0 m NHN</span><span>+2 m NHN</span></div>
     <!-- <p class="tide-meta tide-markers">${mtnwPos != null ? 'MTNW' : ''}${mtnwPos != null && mthwPos != null ? ' · ' : ''}${mthwPos != null ? 'MTHW' : ''}</p> -->
     <p class="tide-meta">MTNW: ${meanReference?.mtnw != null ? `${Math.round(meanReference.mtnw)} cm` : "–"} · MTHW: ${meanReference?.mthw != null ? `${Math.round(meanReference.mthw)} cm` : "–"}</p>
+    <p class="tide-meta">Referenz: PNP ${meanTideWaterCm != null ? `${Math.round(meanTideWaterCm)} cm NHN` : "n/a"}</p>
   `;
 }
 
@@ -420,7 +421,7 @@ function getWaterExtremaLabel(value, mtnw, mthw) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "";
   if (typeof mtnw === "number" && Number.isFinite(mtnw) && value <= mtnw + 10) return "Niedrigwasser";
   if (typeof mthw === "number" && Number.isFinite(mthw) && value >= mthw - 10) return "Hochwasser";
-  return "";
+  return "Mittelwasser";
 }
 
 function renderVerticalWaterCard(current, meanReference, trend) {
@@ -451,14 +452,14 @@ function renderVerticalWaterCard(current, meanReference, trend) {
   const zeroPos = markerPosition(0);
   const waterPos = markerPosition(anomaly) ?? 50;
   const trendClass = trend === "RISING" ? "rising" : trend === "FALLING" ? "falling" : "steady";
-  const trendArrowClass = trend === "RISING" ? "up" : trend === "FALLING" ? "down" : "";
-  const trendLabel = trend === "RISING" ? "Flut" : trend === "FALLING" ? "Ebbe" : "";
+  const trendArrowClass = trend === "RISING" ? "up" : trend === "FALLING" ? "down" : "steady";
+  const trendLabel = trend === "RISING" ? "Flut" : trend === "FALLING" ? "Ebbe" : "konstant";
   const extremaLabel = getWaterExtremaLabel(value, meanReference?.mtnw, meanReference?.mthw);
 
   verticalCard.innerHTML = `
-    <h3>Wasserstand vertikal</h3>
+    <h3>Wasserstand jetzt</h3>
     <p class="tide-value">${formatSignedCm(anomaly)}${extremaLabel ? ` <span class="tide-extrema-tag">${extremaLabel}</span>` : ""}</p>
-    <p class="tide-meta">Dynamische Skala analog zur Tideanomalie (±2 m um MTW)</p>
+    <p class="tide-meta">Dynamische Tideanomalie Baltrum:</p>
     <div class="tide-vertical-layout">
       <div class="tide-coast-scene" role="img" aria-label="Schematische Küstenansicht mit Dünen, Strand und Wasserstand">
         <div class="tide-trend-indicator ${trendClass}">
@@ -468,9 +469,10 @@ function renderVerticalWaterCard(current, meanReference, trend) {
         <div class="tide-sky"></div>
         <div class="tide-dunes"></div>
         <div class="tide-shore"></div>
-        <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW · ${formatMetersNhn(meanReference?.mthw)}</span></span>
-        <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW · ${formatMetersNhn(meanReference?.mtnw)}</span></span>
-        <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;"><span>MTW (0) · ${formatMetersNhn(meanTideWaterCm)}</span></span>
+        <span class="tide-scene-line mthw" style="bottom:${mthwPos ?? 0}%;${mthwPos == null ? "display:none;" : ""}"><span>MTHW · +1.23 m NHN</span></span>
+        <span class="tide-scene-line mtnw" style="bottom:${mtnwPos ?? 0}%;${mtnwPos == null ? "display:none;" : ""}"><span>MTNW · -1.24 m NHN</span></span>
+        <span class="tide-scene-line zero" style="bottom:${zeroPos ?? 0}%;"><span>MTW · 0 m NHN</span></span>
+        <!-- ${formatMetersNhn(meanTideWaterCm)} ${formatMetersNhn(meanReference?.mthw)} ${formatMetersNhn(meanReference?.mtnw)} -->
         <div class="tide-water" style="height:${waterPercent}%;"></div>
         <span class="tide-current-line" style="bottom:${waterPos}%;"></span>
         <div class="tide-water-value" style="bottom:${Math.max(8, Math.min(94, waterPos))}%;">
