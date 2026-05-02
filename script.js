@@ -542,7 +542,7 @@ async function loadTideInfo() {
 }
 
 // Countdown
-const weddingDate = new Date("2026-06-13T10:00:00+02:00");
+const weddingDate = new Date("2026-06-13T11:30:00+02:00");
 const countdownEl = document.getElementById("countdown");
 
 function updateCountdown() {
